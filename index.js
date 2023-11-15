@@ -4,6 +4,8 @@ const express = require('express');     //express - Creates an Express applicati
 
 require("dotenv").config()
 
+const url = require('url');
+
 const crypto = require('crypto');
 
 const nodemailer = require('nodemailer');
@@ -49,7 +51,7 @@ app.post('/admin-login', async (req, res) => {
     // Authenticate the admin user
     const user = await admin.auth().getUserByEmail(email);
 
-    if(!user){
+    if (!user) {
       res.status(401).json({ message: 'Invalid email' });
     }
 
@@ -57,10 +59,8 @@ app.post('/admin-login', async (req, res) => {
     const userClaims = (await admin.auth().getUser(user.uid)).customClaims;
 
     if (userClaims && userClaims.admin === true) {
-      console.log("Admin")
       res.status(200).json({ message: 'Authorised' });
     } else {
-      console.log("Not Admin")
       res.status(401).json({ message: 'Not authorized' });
     }
   } catch (error) {
@@ -76,18 +76,19 @@ app.post('/create-user', async (req, res) => {
   const email = req.body.email;
   const role = req.body.role;
 
-  console.log("Email: ", email);
-  console.log("Role: ", role);
+  console.log("Email: ", email)
+  console.log("Role: ", role)
 
   // Generates a random password
   const password = generateRandomPassword();
 
-  console.log("generated password: ", password);
+  console.log("Password: ", password)
 
   try {
     const userRecord = await admin.auth().createUser({
       email,
       password,
+      emailVerified
     });
 
     if (role === "admin") {
@@ -97,9 +98,65 @@ app.post('/create-user', async (req, res) => {
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
 
+
+    const actionCodeSettings = {
+      url: 'https://your-app.com/email-verification', // URL where users should be redirected after verifying their email
+      handleCodeInApp: true,
+    };
+
+    const actionCode = getActionCodeFromEmailLink(); // Extract action code from the email link
+    await firebase.auth().applyActionCode(actionCode);
+
+
+    // Send the verification email
+    await admin.auth().sendEmailVerification(userRecord.uid, actionCodeSettings);
+
+    const user = await admin.auth().getUser(uid);
+
+    if (user.emailVerified) {
+      // User's email is verified
+    } else {
+      // User's email is not verified
+    }
+
+
     res.status(200).json(userRecord);
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+// Sends verification email to the user
+app.get('/verify-email', async (req, res) => {
+
+  try {
+    const { userId } = req.body;
+
+    console.log("User Id: ", userId)
+
+    const actionCodeSettings = {
+      url: 'https://ezamazwe-edutech-nodejs.onrender.com/', // URL where users should be redirected after verifying their email
+      handleCodeInApp: true,
+    };
+
+    // Sending email verification link
+    await admin.auth().sendEmailVerification(userId, actionCodeSettings);
+
+    const actionCode = req.query.actionCode;
+
+    await firebase.auth().applyActionCode(actionCode);
+
+    // Get the user's email after verification if needed
+    const user = await admin.auth().getUser(userId);
+
+    const email = user.email;
+
+    console.log("User email")
+
+    res.status(200).json({ message: `Email verification successful for ${email}` });
+  } catch (error) {
+    console.error('Error verifying email:', error);
+    res.status(400).json({ error: 'Email verification failed' });
   }
 });
 
