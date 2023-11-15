@@ -21,7 +21,7 @@ const serviceAccount = require('./serviceAccountKey.json'); // Key downloaded fr
 const router = express.Router();
 
 admin.initializeApp({     // Initialize Firebase Admin SDK
-  credential: admin.credential.cert(serviceAccount),    
+  credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://edutech-app-eecfd-default-rtdb.firebaseio.com"
 });
 
@@ -36,7 +36,7 @@ app.get('/', (req, res) => {
   res.send('Welcome to the admin dashboard!');
 });
 
-app.get('/create-user', async (req, res) =>{
+app.get('/create-user', async (req, res) => {
   res.send('Create user dashboard.');
 });
 
@@ -49,24 +49,20 @@ app.post('/admin-login', async (req, res) => {
     // Authenticate the admin user
     const user = await admin.auth().getUserByEmail(email);
 
+    if(!user){
+      res.status(401).json({ message: 'Invalid email' });
+    }
+
     // Check if the user has admin privileges (custom claim)
     const userClaims = (await admin.auth().getUser(user.uid)).customClaims;
 
-    // console.log("Custom Claims: ", userClaims)
-
-    // const role = 'admin';
-
     if (userClaims && userClaims.admin === true) {
-      // const userProfile = {
-      //   user
-      // };
       console.log("Admin")
-      res.status(200).json({ message: 'Authorised', user: userProfile });
+      res.status(200).json({ message: 'Authorised' });
     } else {
       console.log("Not Admin")
       res.status(401).json({ message: 'Not authorized' });
     }
-    // res.status(200).json({ message: 'Admin login successful' });
   } catch (error) {
     // Handle authentication errors
     res.status(401).json({ error: 'Invalid credentials' });
@@ -79,7 +75,7 @@ app.post('/create-user', async (req, res) => {
 
   const email = req.body.email;
   const role = req.body.role;
-  
+
   console.log("Email: ", email);
   console.log("Role: ", role);
 
@@ -94,7 +90,9 @@ app.post('/create-user', async (req, res) => {
       password,
     });
 
-    await admin.auth().setCustomUserClaims(userRecord.uid, { role });
+    if (role === "admin") {
+      await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true });
+    }
 
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
@@ -207,40 +205,40 @@ app.delete('/delete-user', async (req, res) => {
 
 // Handles the reset function 
 app.post("/reset-password", (req, res) => {
-    const email = req.body.email; // Get the user's email from the request body
-  
-    admin
-      .auth()
-      .generatePasswordResetLink(email)
-      .then((link) => {
-        const mailOptions = {
-          from: "simonlephotojr@gmail.com",
-          to: email,
-          subject: "Password Reset",
-          text: `Click this link to reset your password: ${link}`,
-        };
-  
-        // Send the email
-        transporter.sendMail(mailOptions, (error, info) => {
-          if (error) {
-            console.error("Error sending password reset email:", error);
-            res.status(500).json({ error: "Unable to send password reset email." });
-          } else {
-            console.log("Password reset email sent:", info.response);
-            res.status(200).json({ message: "Password reset email sent." });
-          }
-        });
-      })
-      .catch((error) => {
-        console.error("Error generating password reset link:", error);
-        res.status(500).json({ error: "Unable to generate password reset link." });
+  const email = req.body.email; // Get the user's email from the request body
+
+  admin
+    .auth()
+    .generatePasswordResetLink(email)
+    .then((link) => {
+      const mailOptions = {
+        from: "simonlephotojr@gmail.com",
+        to: email,
+        subject: "Password Reset",
+        text: `Click this link to reset your password: ${link}`,
+      };
+
+      // Send the email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Error sending password reset email:", error);
+          res.status(500).json({ error: "Unable to send password reset email." });
+        } else {
+          console.log("Password reset email sent:", info.response);
+          res.status(200).json({ message: "Password reset email sent." });
+        }
       });
-  });
+    })
+    .catch((error) => {
+      console.error("Error generating password reset link:", error);
+      res.status(500).json({ error: "Unable to generate password reset link." });
+    });
+});
 
 
 // app.post("/reset-password", (req, res) => {
 //     const email = req.body.email; // Get the user's email from the request body
-  
+
 //     admin
 //       .auth()
 //       .generatePasswordResetLink(email)
@@ -249,7 +247,7 @@ app.post("/reset-password", (req, res) => {
 //         // You can use your preferred method to send emails, like Nodemailer or a third-party service
 //         // For this example, we'll just log the link to the console
 //         console.log("Password reset link:", link);
-  
+
 //         res.status(200).json({ message: "Password reset email sent." });
 //       })
 //       .catch((error) => {
