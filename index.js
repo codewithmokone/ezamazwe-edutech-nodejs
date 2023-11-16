@@ -67,27 +67,6 @@ app.post('/create-user', async (req, res) => {
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
 
-    // const actionCodeSettings = {
-    //   url: 'http://localhost:4000/email-verification', // URL where users should be redirected after verifying their email
-    //   handleCodeInApp: true,
-    // };
-
-    // const actionCode = getActionCodeFromEmailLink(); // Extract action code from the email link
-    // await firebase.auth().applyActionCode(actionCode);
-
-    // // Send the verification email
-    // await admin.auth().sendEmailVerification(userRecord.uid, actionCodeSettings);
-
-    // const user = await admin.auth().getUser(userRecord.uid);
-
-    // if (user.emailVerified) {
-    //   // User's email is verified
-    //   res.status(200).json(userRecord)
-    // } else {
-    //   // User's email is not verified
-    //   res.status(400).json({ error: 'Email not verified' });
-    // }
-
     res.status(200).json({message: "User created successfully", userRecord: userRecord});
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -107,12 +86,7 @@ app.post('/admin-login', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  console.log(errors.errors)
-
   const { email, password } = req.body;
-
-  // console.log("Email: ", email)
-  // console.log("Pass: ", password)
 
   try {
     // Authenticate the admin user
@@ -179,8 +153,6 @@ app.post("/reset-password", (req, res) => {
 // Send account verification email to user
 app.post('/email-verification', async (req, res) => {
   const { email } = req.body;
-  
-  console.log("Send email: ", email);
 
   // Email content and configuration
   const mailOptions = {
