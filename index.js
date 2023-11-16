@@ -12,7 +12,7 @@ const nodemailer = require('nodemailer');
 
 const admin = require('firebase-admin');    //import the firebase-admin package
 
-var cors = require('cors')
+const cors = require('cors')
 
 const app = express();
 
@@ -43,6 +43,13 @@ app.get('/create-user', async (req, res) => {
 });
 
 
+app.post('/send-verification-email', async (req, res) => {
+  const { email } = req.body;
+  
+  console.log("Send email: ", email);
+ 
+});
+
 // Login endpoint for admin
 app.post('/admin-login', async (req, res) => {
   const { email } = req.body;
@@ -59,7 +66,11 @@ app.post('/admin-login', async (req, res) => {
     const userClaims = (await admin.auth().getUser(user.uid)).customClaims;
 
     if (userClaims && userClaims.admin === true) {
-      res.status(200).json({ message: 'Authorised' });
+
+      // Respond with the custom token
+      res.status(200).json({ message: 'Authorized' });
+
+      // res.status(200).json({ message: 'Authorised' });
     } else {
       res.status(401).json({ message: 'Not authorized' });
     }
@@ -88,7 +99,7 @@ app.post('/create-user', async (req, res) => {
     const userRecord = await admin.auth().createUser({
       email,
       password,
-      emailVerified
+      emailVerified: false,
     });
 
     if (role === "admin") {
@@ -100,13 +111,12 @@ app.post('/create-user', async (req, res) => {
 
 
     const actionCodeSettings = {
-      url: 'https://your-app.com/email-verification', // URL where users should be redirected after verifying their email
+      url: 'http://localhost:4000/email-verification', // URL where users should be redirected after verifying their email
       handleCodeInApp: true,
     };
 
-    const actionCode = getActionCodeFromEmailLink(); // Extract action code from the email link
-    await firebase.auth().applyActionCode(actionCode);
-
+    // const actionCode = getActionCodeFromEmailLink(); // Extract action code from the email link
+    // await firebase.auth().applyActionCode(actionCode);
 
     // Send the verification email
     await admin.auth().sendEmailVerification(userRecord.uid, actionCodeSettings);
@@ -126,11 +136,12 @@ app.post('/create-user', async (req, res) => {
   }
 });
 
+
 // Sends verification email to the user
 app.get('/verify-email', async (req, res) => {
 
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
 
     console.log("User Id: ", userId)
 
@@ -262,6 +273,7 @@ app.delete('/delete-user', async (req, res) => {
 
 // Handles the reset function 
 app.post("/reset-password", (req, res) => {
+
   const email = req.body.email; // Get the user's email from the request body
 
   admin
@@ -269,7 +281,7 @@ app.post("/reset-password", (req, res) => {
     .generatePasswordResetLink(email)
     .then((link) => {
       const mailOptions = {
-        from: "simonlephotojr@gmail.com",
+        from: process.env.MAIL_USERNAME,
         to: email,
         subject: "Password Reset",
         text: `Click this link to reset your password: ${link}`,
@@ -292,26 +304,6 @@ app.post("/reset-password", (req, res) => {
     });
 });
 
-
-// app.post("/reset-password", (req, res) => {
-//     const email = req.body.email; // Get the user's email from the request body
-
-//     admin
-//       .auth()
-//       .generatePasswordResetLink(email)
-//       .then((link) => {
-//         // Send the password reset link to the user's email
-//         // You can use your preferred method to send emails, like Nodemailer or a third-party service
-//         // For this example, we'll just log the link to the console
-//         console.log("Password reset link:", link);
-
-//         res.status(200).json({ message: "Password reset email sent." });
-//       })
-//       .catch((error) => {
-//         console.error("Error sending password reset email:", error);
-//         res.status(500).json({ error: "Unable to send password reset email." });
-//       });
-//   });
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
