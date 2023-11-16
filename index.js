@@ -184,7 +184,7 @@ app.post('/email-verification', async (req, res) => {
 
   // Email content and configuration
   const mailOptions = {
-    from: 'your_email@gmail.com',
+    from: process.env.MAIL_USERNAME,
     to: email,
     subject: 'Email Verification',
     text: 'Please click the link to verify your email.'
@@ -270,7 +270,7 @@ const transporter = nodemailer.createTransport({
 // Function to send a random password to the user's email
 async function sendRandomPasswordEmail(email, password) {
   const mailOptions = {
-    from: "codewithmokone@gmail.com",
+    from: process.env.MAIL_USERNAME,
     to: email,
     subject: "Your Account Information",
     text: `Your account has been created. Your random password is: ${password}`,
@@ -292,7 +292,7 @@ app.get('/add-admin-role', (req, res) => {
 
 
 // adding admin privileges to a user by setting custom claims using the Firebase Authentication SDK
-app.post('/change-admin-role', (req, res) => {     // http://localhost:3000/add-admin
+app.post('/change-admin-role', (req, res) => {
   const email = req.body.email; // Email of the new admin
 
   // Add custom admin claims to the user 
