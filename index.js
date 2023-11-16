@@ -44,7 +44,7 @@ app.get('/', (req, res) => {
 // Create new user
 app.post('/create-user', async (req, res) => {
 
-  const {email, name, phoneNumber, role} = req.body;
+  const { email, name, phoneNumber, role } = req.body;
 
   // Generates a random password
   const password = generateRandomPassword();
@@ -67,7 +67,7 @@ app.post('/create-user', async (req, res) => {
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
 
-    res.status(200).json({message: "User created successfully", userRecord: userRecord});
+    res.status(200).json({ message: "User created successfully", userRecord: userRecord });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -149,25 +149,47 @@ app.post("/reset-password", (req, res) => {
     });
 });
 
+// Function to generate the email verification link
+async function generateVerificationLink(email) {
+  try {
+    const actionCodeSettings = {
+      url: 'https://ezamazwe-edutech-nodejs.onrender.com/email-verified', // URL where the user will be redirected after email verification
+      handleCodeInApp: true // This enables the application to handle the code in the app
+    };
+
+    const link = await admin.auth().generateEmailVerificationLink(email, actionCodeSettings);
+    return link;
+  } catch (error) {
+    console.error('Error generating verification link:', error);
+    throw error;
+  }
+}
+
 
 // Send account verification email to user
 app.post('/email-verification', async (req, res) => {
-  const { email } = req.body;
-
-  // Email content and configuration
-  const mailOptions = {
-    from: process.env.MAIL_USERNAME,
-    to: email,
-    subject: 'Email Verification',
-    text: 'Please click the link to verify your email.'
-    // You can include an HTML version of the email using 'html' key
-  };
-
   try {
-    // Send email
+    const { email } = req.body;
+
+    console.log("Send email: ", email);
+
+    const link = await generateVerificationLink(email);
+
+    console.log('Verification link:', link);
+
+    // Email content and configuration
+    const mailOptions = {
+      from: process.env.MAIL_USERNAME,
+      to: email,
+      subject: 'Email Verification',
+      text: 'Please click the link to verify your email.' + link,
+      // You can include an HTML version of the email using 'html' key
+    };
+
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ', info.response);
     res.status(200).json({ message: 'Email sent successfully!' });
+
   } catch (error) {
     console.error('Error sending email: ', error);
     res.status(500).json({ error: 'Failed to send email' });
