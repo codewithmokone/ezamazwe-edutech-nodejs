@@ -14,6 +14,8 @@ const admin = require('firebase-admin');    //import the firebase-admin package
 
 const cors = require('cors')
 
+const { check, validationResult } = require('express-validator');
+
 const app = express();
 
 const port = process.env.PORT || 4000;
@@ -38,21 +40,79 @@ app.get('/', (req, res) => {
   res.send('Welcome to the admin dashboard!');
 });
 
-app.get('/create-user', async (req, res) => {
-  res.send('Create user dashboard.');
+
+// Create new user
+app.post('/create-user', async (req, res) => {
+
+  const {email, name, phoneNumber, role} = req.body;
+
+  // Generates a random password
+  const password = generateRandomPassword();
+
+  console.log("Password: ", password)
+
+  try {
+    const userRecord = await admin.auth().createUser({
+      email,
+      password,
+      displayName: name,
+      phoneNumber: phoneNumber,
+      emailVerified: false,
+    });
+
+    if (role === "admin") {
+      await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true });
+    }
+
+    // Send the random password to user's email
+    await sendRandomPasswordEmail(email, password)
+
+    // const actionCodeSettings = {
+    //   url: 'http://localhost:4000/email-verification', // URL where users should be redirected after verifying their email
+    //   handleCodeInApp: true,
+    // };
+
+    // const actionCode = getActionCodeFromEmailLink(); // Extract action code from the email link
+    // await firebase.auth().applyActionCode(actionCode);
+
+    // // Send the verification email
+    // await admin.auth().sendEmailVerification(userRecord.uid, actionCodeSettings);
+
+    // const user = await admin.auth().getUser(userRecord.uid);
+
+    // if (user.emailVerified) {
+    //   // User's email is verified
+    //   res.status(200).json(userRecord)
+    // } else {
+    //   // User's email is not verified
+    //   res.status(400).json({ error: 'Email not verified' });
+    // }
+
+    res.status(200).json({message: "User created successfully", userRecord: userRecord});
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 });
 
-
-app.post('/send-verification-email', async (req, res) => {
-  const { email } = req.body;
-  
-  console.log("Send email: ", email);
- 
-});
 
 // Login endpoint for admin
-app.post('/admin-login', async (req, res) => {
-  const { email } = req.body;
+app.post('/admin-login', [
+  check('email').isEmail().withMessage('Invalid email address'),
+  check('password').isLength({ min: 6, max: 30 }).withMessage('Password must be between 6 and 30 characters')
+], async (req, res) => {
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  console.log(errors.errors)
+
+  const { email, password } = req.body;
+
+  // console.log("Email: ", email)
+  // console.log("Pass: ", password)
 
   try {
     // Authenticate the admin user
@@ -69,6 +129,7 @@ app.post('/admin-login', async (req, res) => {
 
       // Respond with the custom token
       res.status(200).json({ message: 'Authorized' });
+      console.log()
 
       // res.status(200).json({ message: 'Authorised' });
     } else {
@@ -81,59 +142,65 @@ app.post('/admin-login', async (req, res) => {
 });
 
 
-// Create new user
-app.post('/create-user', async (req, res) => {
+// Handles the reset function 
+app.post("/reset-password", (req, res) => {
 
-  const email = req.body.email;
-  const role = req.body.role;
+  const email = req.body.email; // Get the user's email from the request body
 
-  console.log("Email: ", email)
-  console.log("Role: ", role)
+  admin
+    .auth()
+    .generatePasswordResetLink(email)
+    .then((link) => {
+      const mailOptions = {
+        from: process.env.MAIL_USERNAME,
+        to: email,
+        subject: "Password Reset",
+        text: `Click this link to reset your password: ${link}`,
+      };
 
-  // Generates a random password
-  const password = generateRandomPassword();
+      // Send the email
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error("Error sending password reset email:", error);
+          res.status(500).json({ error: "Unable to send password reset email." });
+        } else {
+          console.log("Password reset email sent:", info.response);
+          res.status(200).json({ message: "Password reset email sent." });
+        }
+      });
+    })
+    .catch((error) => {
+      console.error("Error generating password reset link:", error);
+      res.status(500).json({ error: "Unable to generate password reset link." });
+    });
+});
 
-  console.log("Password: ", password)
+
+// Send account verification email to user
+app.post('/email-verification', async (req, res) => {
+  const { email } = req.body;
+  
+  console.log("Send email: ", email);
+
+  // Email content and configuration
+  const mailOptions = {
+    from: 'your_email@gmail.com',
+    to: email,
+    subject: 'Email Verification',
+    text: 'Please click the link to verify your email.'
+    // You can include an HTML version of the email using 'html' key
+  };
 
   try {
-    const userRecord = await admin.auth().createUser({
-      email,
-      password,
-      emailVerified: false,
-    });
-
-    if (role === "admin") {
-      await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true });
-    }
-
-    // Send the random password to user's email
-    await sendRandomPasswordEmail(email, password)
-
-
-    const actionCodeSettings = {
-      url: 'http://localhost:4000/email-verification', // URL where users should be redirected after verifying their email
-      handleCodeInApp: true,
-    };
-
-    // const actionCode = getActionCodeFromEmailLink(); // Extract action code from the email link
-    // await firebase.auth().applyActionCode(actionCode);
-
-    // Send the verification email
-    await admin.auth().sendEmailVerification(userRecord.uid, actionCodeSettings);
-
-    const user = await admin.auth().getUser(uid);
-
-    if (user.emailVerified) {
-      // User's email is verified
-    } else {
-      // User's email is not verified
-    }
-
-
-    res.status(200).json(userRecord);
+    // Send email
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent: ', info.response);
+    res.status(200).json({ message: 'Email sent successfully!' });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    console.error('Error sending email: ', error);
+    res.status(500).json({ error: 'Failed to send email' });
   }
+ 
 });
 
 
@@ -226,7 +293,7 @@ app.get('/add-admin-role', (req, res) => {
 
 
 // adding admin privileges to a user by setting custom claims using the Firebase Authentication SDK
-app.post('/add-admin-role', (req, res) => {     // http://localhost:3000/add-admin
+app.post('/change-admin-role', (req, res) => {     // http://localhost:3000/add-admin
   const email = req.body.email; // Email of the new admin
 
   // Add custom admin claims to the user 
@@ -268,40 +335,6 @@ app.delete('/delete-user', async (req, res) => {
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
-});
-
-
-// Handles the reset function 
-app.post("/reset-password", (req, res) => {
-
-  const email = req.body.email; // Get the user's email from the request body
-
-  admin
-    .auth()
-    .generatePasswordResetLink(email)
-    .then((link) => {
-      const mailOptions = {
-        from: process.env.MAIL_USERNAME,
-        to: email,
-        subject: "Password Reset",
-        text: `Click this link to reset your password: ${link}`,
-      };
-
-      // Send the email
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error("Error sending password reset email:", error);
-          res.status(500).json({ error: "Unable to send password reset email." });
-        } else {
-          console.log("Password reset email sent:", info.response);
-          res.status(200).json({ message: "Password reset email sent." });
-        }
-      });
-    })
-    .catch((error) => {
-      console.error("Error generating password reset link:", error);
-      res.status(500).json({ error: "Unable to generate password reset link." });
-    });
 });
 
 
