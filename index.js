@@ -137,7 +137,7 @@ app.post('/admin-login', [
     }
   } catch (error) {
     // Handle authentication errors
-    res.status(401).json({ error: 'Invalid credentials' });
+    res.status(401).json({ message: 'Invalid credentials' });
   }
 });
 
@@ -200,7 +200,6 @@ app.post('/email-verification', async (req, res) => {
     console.error('Error sending email: ', error);
     res.status(500).json({ error: 'Failed to send email' });
   }
- 
 });
 
 
