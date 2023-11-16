@@ -31,11 +31,10 @@ admin.initializeApp({     // Initialize Firebase Admin SDK
 
 // Add body parsing middleware
 app.use(express.json());
-// json - Returns middleware that only parses json and only looks at requests where the Content-Type header matches the type option.
 
 app.use(cors());
 
-
+// Default home page
 app.get('/', (req, res) => {
   res.send('Welcome to the admin dashboard!');
 });
@@ -183,7 +182,6 @@ app.post('/email-verification', async (req, res) => {
       to: email,
       subject: 'Email Verification',
       text: 'Please click the link to verify your email.' + link,
-      // You can include an HTML version of the email using 'html' key
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -279,10 +277,6 @@ async function sendRandomPasswordEmail(email, password) {
     throw new Error("Unable to send random password email.");
   }
 };
-
-app.get('/add-admin-role', (req, res) => {
-  res.send('Admin settings dashboard.');
-});
 
 
 // adding admin privileges to a user by setting custom claims using the Firebase Authentication SDK
