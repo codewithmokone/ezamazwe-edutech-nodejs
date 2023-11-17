@@ -11,7 +11,7 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 const admin = require('firebase-admin');    //import the firebase-admin package
-const  {getAuth} = require('firebase-admin/auth');
+const { getAuth } = require('firebase-admin/auth');
 
 const cors = require('cors')
 
@@ -267,11 +267,8 @@ app.post('/verify-email', async (req, res) => {
     // Get the user by email from Firebase Authentication
     const userRecord = await admin.auth().getUserByEmail(email);
 
-    // console.log("User: ", userRecord.uid);
-
-    
-      // Update the user's custom claims to mark email as verified
-      await admin.auth().updateUser(userRecord.uid, { emailVerified: true });
+    // Update the user's custom claims to mark email as verified
+    await getAuth().updateUser(userRecord.uid, { emailVerified: true });
 
 
     const user = await admin.auth().getUserByEmail(email);
