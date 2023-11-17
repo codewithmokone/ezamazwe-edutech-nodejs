@@ -29,6 +29,8 @@ admin.initializeApp({     // Initialize Firebase Admin SDK
   databaseURL: "https://edutech-app-eecfd-default-rtdb.firebaseio.com"
 });
 
+const db = admin.firestore();
+
 // Add body parsing middleware
 app.use(express.json());
 
@@ -149,21 +151,64 @@ app.post("/reset-password", (req, res) => {
 });
 
 // Function to generate the email verification link
+// async function generateVerificationLink(email) {
+//   try {
+//     const actionCodeSettings = {
+//       url: 'https://ezamazwe-edutech-nodejs.onrender.com/email-verified', // URL where the user will be redirected after email verification
+//       handleCodeInApp: true // This enables the application to handle the code in the app
+//     };
+
+//     const link = await admin.auth().generateEmailVerificationLink(email, actionCodeSettings);
+//     return link;
+//   } catch (error) {
+//     console.error('Error generating verification link:', error);
+//     throw error;
+//   }
+// }
+
+
+// Your custom function to generate a verification link using cryptography
+// async function generateVerificationLink(email) {
+
+//   // Your logic here to generate a unique verification link using cryptography
+//   const hash = crypto.randomBytes(32).toString("hex")
+//   // const hash = crypto.createHmac('sha256', secret).update(email).digest('hex');
+//   const verificationLink = `http://localhost:4000/verify-email/?code=${hash}&email=${email}`; // Replace with your website URL and unique hash
+
+//   // Add the email and verification code to firestore collection
+//   await db.collection('verificationData').add({
+//     email,
+//     verificationCode: hash,
+//     timestamp: admin.firestore.FieldValue.serverTimestamp(),
+//   });
+
+//   return verificationLink;
+// }
+
 async function generateVerificationLink(email) {
   try {
-    const actionCodeSettings = {
-      url: 'https://ezamazwe-edutech-nodejs.onrender.com/email-verified', // URL where the user will be redirected after email verification
-      handleCodeInApp: true // This enables the application to handle the code in the app
-    };
+    // Your logic here to generate a unique verification link using cryptography
+    const hash = crypto.randomBytes(32).toString('hex');
+    
+    // Const for the verification link
+    const verificationLink = `http://localhost:4000/verify-email/?code=${hash}&email=${email}`;
+  
+    // Add the email and verification code to Firestore collection
+    await db.collection('verifyEmail').add({
+      email,
+      verificationCode: hash,
+    });
+    
+    return verificationLink;
 
-    const link = await admin.auth().generateEmailVerificationLink(email, actionCodeSettings);
-    return link;
   } catch (error) {
+    // Handle any potential errors here
     console.error('Error generating verification link:', error);
-    throw error;
+    throw error; // You might want to handle errors differently as per your application's requirements
   }
 }
 
+console.log( crypto.randomBytes(32).toString("hex"))
 
 // Send account verification email to user
 app.post('/email-verification', async (req, res) => {
@@ -186,7 +231,7 @@ app.post('/email-verification', async (req, res) => {
 
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ', info.response);
-    res.status(200).json({ message: 'Email sent successfully!' });
+    res.status(200).json({ message: 'Email sent successfully!' + link });
 
   } catch (error) {
     console.error('Error sending email: ', error);
@@ -196,12 +241,15 @@ app.post('/email-verification', async (req, res) => {
 
 
 // Sends verification email to the user
-app.get('/verify-email', async (req, res) => {
+app.post('/verify-email', async (req, res) => {
 
   try {
-    const { userId } = req.query;
+    const { code, email } = req.body;
 
-    console.log("User Id: ", userId)
+    console.log("Verification Code: ", code)
+    console.log("Email: ", email)
+
+    // console.log("User Id: ", userId)
 
     const actionCodeSettings = {
       url: 'https://ezamazwe-edutech-nodejs.onrender.com/', // URL where users should be redirected after verifying their email
@@ -218,7 +266,6 @@ app.get('/verify-email', async (req, res) => {
     // Get the user's email after verification if needed
     const user = await admin.auth().getUser(userId);
 
-    const email = user.email;
 
     console.log("User email")
 
