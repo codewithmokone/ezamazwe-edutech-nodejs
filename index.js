@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 const admin = require('firebase-admin');    //import the firebase-admin package
+const  {getAuth} = require('firebase-admin/auth');
 
 const cors = require('cors')
 
@@ -189,16 +190,16 @@ async function generateVerificationLink(email) {
   try {
     // Your logic here to generate a unique verification link using cryptography
     const hash = crypto.randomBytes(32).toString('hex');
-    
+
     // Const for the verification link
     const verificationLink = `http://localhost:4000/verify-email/?code=${hash}&email=${email}`;
-  
+
     // Add the email and verification code to Firestore collection
     await db.collection('verifyEmail').add({
       email,
       verificationCode: hash,
     });
-    
+
     return verificationLink;
 
   } catch (error) {
@@ -208,7 +209,7 @@ async function generateVerificationLink(email) {
   }
 }
 
-console.log( crypto.randomBytes(32).toString("hex"))
+console.log(crypto.randomBytes(32).toString("hex"))
 
 // Send account verification email to user
 app.post('/email-verification', async (req, res) => {
@@ -244,35 +245,43 @@ app.post('/email-verification', async (req, res) => {
 app.post('/verify-email', async (req, res) => {
 
   try {
-    const { code, email } = req.body;
+    const { code, email } = req.query;
 
-    console.log("Verification Code: ", code)
-    console.log("Email: ", email)
+    console.log("code: ", code);
+    console.log("email: ", email);
 
-    // console.log("User Id: ", userId)
+    // Check if 'code' and 'email' parameters exist
+    if (!code || !email) {
+      return res.status(400).json({ error: 'Verification code or email is missing.' });
+    } else {
+      const verificationSnapshot = await db.collection('verifyEmail')
+        .where('email', '==', email)
+        .where('verificationCode', '==', code)
+        .get();
 
-    const actionCodeSettings = {
-      url: 'https://ezamazwe-edutech-nodejs.onrender.com/', // URL where users should be redirected after verifying their email
-      handleCodeInApp: true,
-    };
+      if (verificationSnapshot.empty) {
+        return res.status(404).json({ error: 'Verification code or email is invalid.' });
+      }
+    }
 
-    // Sending email verification link
-    await admin.auth().sendEmailVerification(userId, actionCodeSettings);
+    // Get the user by email from Firebase Authentication
+    const userRecord = await admin.auth().getUserByEmail(email);
 
-    const actionCode = req.query.actionCode;
+    console.log("User: ", userRecord.uid);
 
-    await firebase.auth().applyActionCode(actionCode);
+    if (userRecord.uid) {
+      // Update the user's custom claims to mark email as verified
+      await getAuth(admin).updateUser(userRecord.uid, { verifiedEmail: true });
+    }
 
-    // Get the user's email after verification if needed
-    const user = await admin.auth().getUser(userId);
+    const user = await admin.auth().getUserByEmail(email);
+    console.log("User: ", user);
 
 
-    console.log("User email")
-
-    res.status(200).json({ message: `Email verification successful for ${email}` });
+    return res.status(200).json({ message: 'Email verified successfully!' });
   } catch (error) {
     console.error('Error verifying email:', error);
-    res.status(400).json({ error: 'Email verification failed' });
+    return res.status(500).json({ error: 'Failed to verify email.' });
   }
 });
 
