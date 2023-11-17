@@ -192,7 +192,7 @@ async function generateVerificationLink(email) {
     const hash = crypto.randomBytes(32).toString('hex');
 
     // Const for the verification link
-    const verificationLink = `http://localhost:4000/verify-email/?code=${hash}&email=${email}`;
+    const verificationLink = `https://ezamazwe-edutech-nodejs.onrender.com/verify-email/?code=${hash}&email=${email}`;
 
     // Add the email and verification code to Firestore collection
     await db.collection('verifyEmail').add({
