@@ -267,12 +267,12 @@ app.post('/verify-email', async (req, res) => {
     // Get the user by email from Firebase Authentication
     const userRecord = await admin.auth().getUserByEmail(email);
 
-    console.log("User: ", userRecord.uid);
+    // console.log("User: ", userRecord.uid);
 
-    if (userRecord.uid) {
+    
       // Update the user's custom claims to mark email as verified
-      await getAuth(admin).updateUser(userRecord.uid, { verifiedEmail: true });
-    }
+      await admin.auth().updateUser(userRecord.uid, { emailVerified: true });
+
 
     const user = await admin.auth().getUserByEmail(email);
     console.log("User: ", user);
