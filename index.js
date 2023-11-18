@@ -51,8 +51,6 @@ app.post('/create-user', async (req, res) => {
   // Generates a random password
   const password = generateRandomPassword();
 
-  console.log("Password: ", password)
-
   try {
     const userRecord = await admin.auth().createUser({
       email,
@@ -98,6 +96,20 @@ app.post('/admin-login', [
       res.status(401).json({ message: 'Invalid email' });
     }
 
+    // Check if the user has changed their password
+    const userMetadata = user.metadata;
+    const lastPasswordChangeTime = userMetadata.lastPasswordChangeTime;
+
+    // Compare last password change time with a reference time or threshold
+    const referenceTime = new Date(); // Set your reference time
+
+    if (lastPasswordChangeTime < referenceTime) {
+      res.status(200).json({ message: 'Password has been changed' });
+      
+    }else{
+      res.status(401).json({ message: 'Password has not been changed' });
+    }
+
     // Check if the user has admin privileges (custom claim)
     const userClaims = (await admin.auth().getUser(user.uid)).customClaims;
 
@@ -105,7 +117,6 @@ app.post('/admin-login', [
 
       // Respond with the custom token
       res.status(200).json({ message: 'Authorized' });
-      console.log()
 
       // res.status(200).json({ message: 'Authorised' });
     } else {
@@ -119,44 +130,9 @@ app.post('/admin-login', [
 
 
 // Handles the reset function 
-app.post("/reset-password", (req, res) => {
-
-  // try {
-
-  //   const email = req.body.email; // Get the user's email from the request body
-
-  //   const actionCodeSettings = {
-  //     url: 'https://ezamazwe-edutech-client.netlify.app/', // URL where the user will be redirected after email verification
-  //     handleCodeInApp: true // This enables the application to handle the code in the app
-  //   };
-
-  //   admin
-  //   .auth()
-  //   .generatePasswordResetLink(email, actionCodeSettings)
-  //   .then((link) => {
-  //     const mailOptions = {
-  //       from: process.env.MAIL_USERNAME,
-  //       to: email,
-  //       subject: "Password Reset",
-  //       text: `Click this link to reset your password: ${link}`,
-  //     };
-
-  //     // Send the email
-  //     transporter.sendMail(mailOptions, (error, info) => {
-  //       if (error) {
-  //         console.error("Error sending password reset email:", error);
-  //         res.status(500).json({ error: "Unable to send password reset email." });
-  //       } else {
-  //         console.log("Password reset email sent:", info.response);
-  //         res.status(200).json({ message: "Password reset email sent." });
-  //       }
-  //     });
-  //   })
-
-  // } catch (error) {
-  //   console.error("Error generating password reset link:", error);
-  //   res.status(500).json({ error: "Unable to generate password reset link." });
-  // }
+app.post("/reset-password", [
+  check('email').isEmail().withMessage('Invalid email address'),
+],(req, res) => {
 
   const email = req.body.email; // Get the user's email from the request body
 
@@ -193,40 +169,6 @@ app.post("/reset-password", (req, res) => {
     });
 });
 
-// Function to generate the email verification link
-// async function generateVerificationLink(email) {
-//   try {
-//     const actionCodeSettings = {
-//       url: 'https://ezamazwe-edutech-nodejs.onrender.com/email-verified', // URL where the user will be redirected after email verification
-//       handleCodeInApp: true // This enables the application to handle the code in the app
-//     };
-
-//     const link = await admin.auth().generateEmailVerificationLink(email, actionCodeSettings);
-//     return link;
-//   } catch (error) {
-//     console.error('Error generating verification link:', error);
-//     throw error;
-//   }
-// }
-
-
-// Your custom function to generate a verification link using cryptography
-// async function generateVerificationLink(email) {
-
-//   // Your logic here to generate a unique verification link using cryptography
-//   const hash = crypto.randomBytes(32).toString("hex")
-//   // const hash = crypto.createHmac('sha256', secret).update(email).digest('hex');
-//   const verificationLink = `http://localhost:4000/verify-email/?code=${hash}&email=${email}`; // Replace with your website URL and unique hash
-
-//   // Add the email and verification code to firestore collection
-//   await db.collection('verificationData').add({
-//     email,
-//     verificationCode: hash,
-//     timestamp: admin.firestore.FieldValue.serverTimestamp(),
-//   });
-
-//   return verificationLink;
-// }
 
 async function generateVerificationLink(email) {
   try {
@@ -251,18 +193,20 @@ async function generateVerificationLink(email) {
   }
 }
 
-console.log(crypto.randomBytes(32).toString("hex"))
 
 // Send account verification email to user
-app.post('/email-verification', async (req, res) => {
+app.post('/email-verification',[
+  check('email').isEmail().withMessage('Invalid email address'),
+] ,async (req, res) => {
   try {
     const { email } = req.body;
 
-    console.log("Send email: ", email);
+    const actionCodeSettings = {
+      url: 'https://ezamazwe-edutech-nodejs.onrender.com/verify-email', // URL where the user will be redirected after email verification
+      handleCodeInApp: true // This enables the application to handle the code in the app
+    };
 
-    const link = await generateVerificationLink(email);
-
-    console.log('Verification link:', link);
+    const link = await generateVerificationLink(email, actionCodeSettings);
 
     // Email content and configuration
     const mailOptions = {
@@ -284,13 +228,13 @@ app.post('/email-verification', async (req, res) => {
 
 
 // Sends verification email to the user
-app.post('/verify-email', async (req, res) => {
+app.post('/verify-email',[
+  check('email').isEmail().withMessage('Invalid email address'),
+  check('password').isLength({ min: 6, max: 30 }).withMessage('Password must be between 6 and 30 characters')
+] ,async (req, res) => {
 
   try {
     const { code, email } = req.query;
-
-    console.log("code: ", code);
-    console.log("email: ", email);
 
     // Check if 'code' and 'email' parameters exist
     if (!code || !email) {
@@ -324,6 +268,8 @@ app.post('/verify-email', async (req, res) => {
   }
 });
 
+
+// Checks if the users email has been verified
 app.get('/check-email-verification', async (req, res) => {
   try {
     const { email } = req.query;
@@ -335,9 +281,13 @@ app.get('/check-email-verification', async (req, res) => {
     const userRecord = await admin.auth().getUserByEmail(email);
 
     if (userRecord.emailVerified) {
-      return res.status(200).json({ message: 'Email is verified.' });
+
+      console.log("User: ", userRecord)
+
+      return res.status(200).json({ message: 'Email is verified.', userRecord });
     } else {
-      return res.status(200).json({ message: 'Email is not verified.' });
+      console.log("User: ", userRecord)
+      return res.status(200).json({ message: 'Email is not verified.', userRecord });
     }
   } catch (error) {
     console.error('Error checking email verification:', error);
