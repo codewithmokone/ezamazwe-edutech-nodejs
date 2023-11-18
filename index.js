@@ -201,12 +201,12 @@ app.post('/email-verification',[
   try {
     const { email } = req.body;
 
-    const actionCodeSettings = {
-      url: 'https://ezamazwe-edutech-nodejs.onrender.com/verify-email', // URL where the user will be redirected after email verification
-      handleCodeInApp: true // This enables the application to handle the code in the app
-    };
+    // const actionCodeSettings = {
+    //   url: 'https://ezamazwe-edutech-nodejs.onrender.com/verify-email', // URL where the user will be redirected after email verification
+    //   handleCodeInApp: true // This enables the application to handle the code in the app
+    // };
 
-    const link = await generateVerificationLink(email, actionCodeSettings);
+    const link = await generateVerificationLink(email);
 
     // Email content and configuration
     const mailOptions = {
