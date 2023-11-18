@@ -121,11 +121,53 @@ app.post('/admin-login', [
 // Handles the reset function 
 app.post("/reset-password", (req, res) => {
 
+  // try {
+
+  //   const email = req.body.email; // Get the user's email from the request body
+
+  //   const actionCodeSettings = {
+  //     url: 'https://ezamazwe-edutech-client.netlify.app/', // URL where the user will be redirected after email verification
+  //     handleCodeInApp: true // This enables the application to handle the code in the app
+  //   };
+
+  //   admin
+  //   .auth()
+  //   .generatePasswordResetLink(email, actionCodeSettings)
+  //   .then((link) => {
+  //     const mailOptions = {
+  //       from: process.env.MAIL_USERNAME,
+  //       to: email,
+  //       subject: "Password Reset",
+  //       text: `Click this link to reset your password: ${link}`,
+  //     };
+
+  //     // Send the email
+  //     transporter.sendMail(mailOptions, (error, info) => {
+  //       if (error) {
+  //         console.error("Error sending password reset email:", error);
+  //         res.status(500).json({ error: "Unable to send password reset email." });
+  //       } else {
+  //         console.log("Password reset email sent:", info.response);
+  //         res.status(200).json({ message: "Password reset email sent." });
+  //       }
+  //     });
+  //   })
+
+  // } catch (error) {
+  //   console.error("Error generating password reset link:", error);
+  //   res.status(500).json({ error: "Unable to generate password reset link." });
+  // }
+
   const email = req.body.email; // Get the user's email from the request body
+
+  const actionCodeSettings = {
+    url: 'https://ezamazwe-edutech-client.netlify.app/', // URL where the user will be redirected after email verification
+    handleCodeInApp: true // This enables the application to handle the code in the app
+  };
 
   admin
     .auth()
-    .generatePasswordResetLink(email)
+    .generatePasswordResetLink(email, actionCodeSettings)
     .then((link) => {
       const mailOptions = {
         from: process.env.MAIL_USERNAME,
@@ -279,6 +321,27 @@ app.post('/verify-email', async (req, res) => {
   } catch (error) {
     console.error('Error verifying email:', error);
     return res.status(500).json({ error: 'Failed to verify email.' });
+  }
+});
+
+app.get('/check-email-verification', async (req, res) => {
+  try {
+    const { email } = req.query;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is missing.' });
+    }
+
+    const userRecord = await admin.auth().getUserByEmail(email);
+
+    if (userRecord.emailVerified) {
+      return res.status(200).json({ message: 'Email is verified.' });
+    } else {
+      return res.status(200).json({ message: 'Email is not verified.' });
+    }
+  } catch (error) {
+    console.error('Error checking email verification:', error);
+    return res.status(500).json({ error: 'Failed to check email verification.' });
   }
 });
 
