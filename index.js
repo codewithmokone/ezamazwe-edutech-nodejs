@@ -208,8 +208,6 @@ app.post('/email-verification',[
 
     const link = await generateVerificationLink(email, actionCodeSettings);
 
-    console.log("Email link", link)
-
     // Email content and configuration
     const mailOptions = {
       from: process.env.MAIL_USERNAME,
@@ -237,7 +235,7 @@ app.post('/verify-email' ,async (req, res) => {
 
     console.log("Code: ",code);
     console.log("Email: ", email);
-    
+
     // Check if 'code' and 'email' parameters exist
     if (!code || !email) {
       return res.status(400).json({ error: 'Verification code or email is missing.' });
@@ -286,10 +284,10 @@ app.get('/check-email-verification', async (req, res) => {
 
       console.log("User: ", userRecord)
 
-      return res.status(200).json({ message: 'Email is verified.', userRecord });
+      return res.status(200).json({ message: 'Email is verified.', userRecord: userRecord });
     } else {
       console.log("User: ", userRecord)
-      return res.status(200).json({ message: 'Email is not verified.', userRecord });
+      return res.status(200).json({ message: 'Email is not verified.', userRecord: userRecord });
     }
   } catch (error) {
     console.error('Error checking email verification:', error);
