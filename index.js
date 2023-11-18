@@ -201,12 +201,14 @@ app.post('/email-verification',[
   try {
     const { email } = req.body;
 
-    // const actionCodeSettings = {
-    //   url: 'https://ezamazwe-edutech-nodejs.onrender.com/verify-email', // URL where the user will be redirected after email verification
-    //   handleCodeInApp: true // This enables the application to handle the code in the app
-    // };
+    const actionCodeSettings = {
+      url: 'https://ezamazwe-edutech-nodejs.onrender.com/verify-email', // URL where the user will be redirected after email verification
+      handleCodeInApp: true // This enables the application to handle the code in the app
+    };
 
-    const link = await generateVerificationLink(email);
+    const link = await generateVerificationLink(email, actionCodeSettings);
+
+    console.log("Email link", link)
 
     // Email content and configuration
     const mailOptions = {
@@ -228,14 +230,14 @@ app.post('/email-verification',[
 
 
 // Sends verification email to the user
-app.post('/verify-email',[
-  check('email').isEmail().withMessage('Invalid email address'),
-  check('password').isLength({ min: 6, max: 30 }).withMessage('Password must be between 6 and 30 characters')
-] ,async (req, res) => {
+app.post('/verify-email' ,async (req, res) => {
 
   try {
     const { code, email } = req.query;
 
+    console.log("Code: ",code);
+    console.log("Email: ", email);
+    
     // Check if 'code' and 'email' parameters exist
     if (!code || !email) {
       return res.status(400).json({ error: 'Verification code or email is missing.' });
