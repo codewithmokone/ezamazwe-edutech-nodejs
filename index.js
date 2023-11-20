@@ -111,6 +111,7 @@ app.put('/admin-update', async (req, res) => {
     });
 });
 
+
 app.put('/update-password-reset', async (req, res) => {
 
   try {
@@ -197,10 +198,10 @@ app.post("/reset-password", [
   check('email').isEmail().withMessage('Invalid email address'),
 ], (req, res) => {
 
-  const email = req.body.email; // Get the user's email from the request body
+  const {email, url} = req.body; // Get the user's email from the request body
 
   const actionCodeSettings = {
-    url: 'https://ezamazwe-edutech-client.netlify.app/', // URL where the user will be redirected after email verification
+    url: url, // URL where the user will be redirected after email verification
     handleCodeInApp: true // This enables the application to handle the code in the app
   };
 
