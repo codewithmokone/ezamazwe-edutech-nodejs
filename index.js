@@ -64,12 +64,7 @@ app.post('/create-user', [
       emailVerified: false,
     });
 
-    // if (role === "admin") {
-    //   await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
-    // }
-
     await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
-    // await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "owner", forcePasswordReset: false });
 
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
@@ -121,6 +116,19 @@ app.put('/update-password-reset', async (req, res) => {
     if (!email) {
       return res.status(400).send('Email is required.');
     }
+
+     // Email content and configuration
+     const mailOptions = {
+      from: process.env.MAIL_USERNAME,
+      to: email,
+      subject: 'Password Update',
+      text: 'You are about to update your admin password.',
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent: ', info.response);
+    res.status(200).json({ message: 'Email sent successfully!' });
+
 
     const userRecord = await admin.auth().getUserByEmail(email);
 
@@ -330,7 +338,8 @@ app.post('/verify-email', async (req, res) => {
 
     const user = await admin.auth().getUserByEmail(email);
 
-    return res.redirect("https://ezamazwe-edutech-client.netlify.app/")
+    // return res.redirect("https://ezamazwe-edutech-client.netlify.app/")
+    return res.status(200).json({ message: 'Email verification successful.' });
 
   } catch (error) {
     console.error('Error verifying email:', error);
