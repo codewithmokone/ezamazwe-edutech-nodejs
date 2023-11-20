@@ -44,9 +44,13 @@ app.get('/', (req, res) => {
 
 
 // Create new user
-app.post('/create-user', async (req, res) => {
+app.post('/create-user', [
+  check('email').isEmail().withMessage('Invalid email address'),
+  check('name').isEmail().withMessage('Provide a name'),
+  check('phoneNumber').isEmail().withMessage('Invalid phone number'),
+], async (req, res) => {
 
-  const { email, name, phoneNumber, role } = req.body;
+  const { email, name, phoneNumber } = req.body;
 
   // Generates a random password
   const password = generateRandomPassword();
@@ -60,14 +64,18 @@ app.post('/create-user', async (req, res) => {
       emailVerified: false,
     });
 
-    if (role === "admin") {
-      await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true });
-    }
+    // if (role === "admin") {
+    //   await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
+    // }
+
+    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
 
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
 
-    res.status(200).json({ message: "User created successfully", userRecord: userRecord });
+    const user = await admin.auth().getUserByEmail(email);
+
+    res.status(200).json({ message: "User created successfully", userRecord: user });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -96,32 +104,34 @@ app.post('/admin-login', [
       res.status(401).json({ message: 'Invalid email' });
     }
 
-    // Check if the user has changed their password
-    const userMetadata = user.metadata;
-    const lastPasswordChangeTime = userMetadata.lastPasswordChangeTime;
-
-    // Compare last password change time with a reference time or threshold
-    const referenceTime = new Date(); // Set your reference time
-
-    if (lastPasswordChangeTime < referenceTime) {
-      res.status(200).json({ message: 'Password has been changed' });
-      
-    }else{
-      res.status(401).json({ message: 'Password has not been changed' });
-    }
-
     // Check if the user has admin privileges (custom claim)
     const userClaims = (await admin.auth().getUser(user.uid)).customClaims;
 
     if (userClaims && userClaims.admin === true) {
 
+
       // Respond with the custom token
-      res.status(200).json({ message: 'Authorized' });
+      res.status(200).json({ message: 'Authorized', forcePasswordChange: userClaims.forcePasswordReset, permissions: userClaims.permissions  });
 
       // res.status(200).json({ message: 'Authorised' });
     } else {
       res.status(401).json({ message: 'Not authorized' });
     }
+
+    //  // Check if the user has changed their password
+    //  const userMetadata = user.metadata;
+    //  const lastPasswordChangeTime = userMetadata.lastPasswordChangeTime;
+ 
+    //  // Compare last password change time with a reference time or threshold
+    //  const referenceTime = new Date(); // Set your reference time
+ 
+    //  if (lastPasswordChangeTime < referenceTime) {
+    //    res.status(200).json({ message: 'Password has been changed' });
+       
+    //  }else{
+    //    res.status(401).json({ message: 'Password has not been changed' });
+    //  }
+
   } catch (error) {
     // Handle authentication errors
     res.status(401).json({ message: 'Invalid credentials' });
