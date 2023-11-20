@@ -320,14 +320,17 @@ app.post('/verify-email', async (req, res) => {
     // Get the user by email from Firebase Authentication
     const userRecord = await admin.auth().getUserByEmail(email);
 
+    // Ensure the user record exists
+    if (!userRecord) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
     // Update the user's custom claims to mark email as verified
     await getAuth().updateUser(userRecord.uid, { emailVerified: true });
 
-
     const user = await admin.auth().getUserByEmail(email);
-    console.log("User: ", user);
 
-    res.redirect("https://ezamazwe-edutech-client.netlify.app/")
+    return res.redirect("https://ezamazwe-edutech-client.netlify.app/")
 
   } catch (error) {
     console.error('Error verifying email:', error);
