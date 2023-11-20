@@ -68,7 +68,8 @@ app.post('/create-user', [
     //   await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
     // }
 
-    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
+    // await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
+    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "owner", forcePasswordReset: false });
 
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
@@ -122,6 +123,7 @@ app.put('/update-password-reset', async (req, res) => {
     const userRecord = await admin.auth().getUserByEmail(email);
 
     await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: false });
+
 
     const user = await admin.auth().getUserByEmail(email);
 
