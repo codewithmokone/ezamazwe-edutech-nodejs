@@ -130,17 +130,6 @@ app.put('/update-password-reset', async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 
-  // getAuth()
-  //   .updateUser(uid, {
-
-  //   })
-  //   .then((userRecord) => {
-  //     // See the UserRecord reference doc for the contents of userRecord.
-  //     console.log('Successfully updated user', userRecord.toJSON());
-  //   })
-  //   .catch((error) => {
-  //     console.log('Error updating user:', error);
-  //   });
 });
 
 
@@ -332,8 +321,8 @@ app.post('/verify-email', async (req, res) => {
     const user = await admin.auth().getUserByEmail(email);
     console.log("User: ", user);
 
-
-    return res.status(200).json({ message: 'Email verified successfully!' });
+    res.redirect("https://ezamazwe-edutech-client.netlify.app/")
+    // return res.status(200).json({ message: 'Email verified successfully!' });
   } catch (error) {
     console.error('Error verifying email:', error);
     return res.status(500).json({ error: 'Failed to verify email.' });
