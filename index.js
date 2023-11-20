@@ -82,6 +82,68 @@ app.post('/create-user', [
 });
 
 
+// Update user
+app.put('/admin-update', async (req, res) => {
+
+  const { uid, phoneNumber } = req.body;
+
+  if (!uid) {
+    return res.status(400).send('No user are required.');
+  }
+
+  // Check if the provided phone number already exists for another user
+  const userExists = await getUserByPhoneNumber(phoneNumber);
+  if (userExists && userExists.uid !== uid) {
+    return res.status(400).send('Phone number already exists for another user.');
+  }
+
+  getAuth()
+    .updateUser(uid, {
+      phoneNumber: phoneNumber,
+    })
+    .then((userRecord) => {
+      // See the UserRecord reference doc for the contents of userRecord.
+      console.log('Successfully updated user', userRecord.toJSON());
+    })
+    .catch((error) => {
+      console.log('Error updating user:', error);
+    });
+});
+
+app.put('/update-password-reset', async (req, res) => {
+
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).send('Email is required.');
+    }
+
+    const userRecord = await admin.auth().getUserByEmail(email);
+
+    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: false });
+
+    const user = await admin.auth().getUserByEmail(email);
+
+    res.status(200).json({ message: "Successful",  ...user.customClaims });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+
+  // getAuth()
+  //   .updateUser(uid, {
+
+  //   })
+  //   .then((userRecord) => {
+  //     // See the UserRecord reference doc for the contents of userRecord.
+  //     console.log('Successfully updated user', userRecord.toJSON());
+  //   })
+  //   .catch((error) => {
+  //     console.log('Error updating user:', error);
+  //   });
+});
+
+
 // Login endpoint for admin
 app.post('/admin-login', [
   check('email').isEmail().withMessage('Invalid email address'),
@@ -111,7 +173,7 @@ app.post('/admin-login', [
 
 
       // Respond with the custom token
-      res.status(200).json({ message: 'Authorized', forcePasswordChange: userClaims.forcePasswordReset, permissions: userClaims.permissions  });
+      res.status(200).json({ message: 'Authorized', forcePasswordChange: userClaims.forcePasswordReset, permissions: userClaims.permissions });
 
       // res.status(200).json({ message: 'Authorised' });
     } else {
@@ -121,13 +183,13 @@ app.post('/admin-login', [
     //  // Check if the user has changed their password
     //  const userMetadata = user.metadata;
     //  const lastPasswordChangeTime = userMetadata.lastPasswordChangeTime;
- 
+
     //  // Compare last password change time with a reference time or threshold
     //  const referenceTime = new Date(); // Set your reference time
- 
+
     //  if (lastPasswordChangeTime < referenceTime) {
     //    res.status(200).json({ message: 'Password has been changed' });
-       
+
     //  }else{
     //    res.status(401).json({ message: 'Password has not been changed' });
     //  }
@@ -142,7 +204,7 @@ app.post('/admin-login', [
 // Handles the reset function 
 app.post("/reset-password", [
   check('email').isEmail().withMessage('Invalid email address'),
-],(req, res) => {
+], (req, res) => {
 
   const email = req.body.email; // Get the user's email from the request body
 
@@ -205,9 +267,9 @@ async function generateVerificationLink(email) {
 
 
 // Send account verification email to user
-app.post('/email-verification',[
+app.post('/email-verification', [
   check('email').isEmail().withMessage('Invalid email address'),
-] ,async (req, res) => {
+], async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -238,12 +300,12 @@ app.post('/email-verification',[
 
 
 // Sends verification email to the user
-app.post('/verify-email' ,async (req, res) => {
+app.post('/verify-email', async (req, res) => {
 
   try {
     const { code, email } = req.query;
 
-    console.log("Code: ",code);
+    console.log("Code: ", code);
     console.log("Email: ", email);
 
     // Check if 'code' and 'email' parameters exist
