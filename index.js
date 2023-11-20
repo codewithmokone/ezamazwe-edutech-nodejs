@@ -43,7 +43,7 @@ app.get('/', (req, res) => {
 });
 
 
-// Create new user
+// Create new admin
 app.post('/create-user', [
   check('email').isEmail().withMessage('Invalid email address'),
   check('name').isEmail().withMessage('Provide a name'),
@@ -83,13 +83,13 @@ app.post('/create-user', [
 });
 
 
-// Update user
+// Handles updating user profile
 app.put('/admin-update', async (req, res) => {
 
   const { uid, phoneNumber } = req.body;
 
   if (!uid) {
-    return res.status(400).send('No user are required.');
+    return res.status(400).send('No user is provided.');
   }
 
   // Check if the provided phone number already exists for another user
@@ -112,6 +112,7 @@ app.put('/admin-update', async (req, res) => {
 });
 
 
+// Handles updating admin password
 app.put('/update-password-reset', async (req, res) => {
 
   try {
@@ -125,8 +126,10 @@ app.put('/update-password-reset', async (req, res) => {
 
     await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: false });
 
+    await getAuth().updateUser(userRecord.uid, { emailVerified: true }); // Sets the emailVerified to true 
 
-    const user = await admin.auth().getUserByEmail(email);
+
+    const user = await admin.auth().getUserByEmail(email); // Gets user's profile information using email
 
     res.status(200).json({ message: "Successful",  ...user.customClaims });
   } catch (error) {
