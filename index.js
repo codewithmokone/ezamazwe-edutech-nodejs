@@ -328,7 +328,7 @@ app.post('/verify-email', async (req, res) => {
     console.log("User: ", user);
 
     res.redirect("https://ezamazwe-edutech-client.netlify.app/")
-    // return res.status(200).json({ message: 'Email verified successfully!' });
+
   } catch (error) {
     console.error('Error verifying email:', error);
     return res.status(500).json({ error: 'Failed to verify email.' });
