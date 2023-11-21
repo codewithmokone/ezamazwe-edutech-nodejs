@@ -183,20 +183,6 @@ app.post('/admin-login', [
       res.status(401).json({ message: 'Not authorized' });
     }
 
-    //  // Check if the user has changed their password
-    //  const userMetadata = user.metadata;
-    //  const lastPasswordChangeTime = userMetadata.lastPasswordChangeTime;
-
-    //  // Compare last password change time with a reference time or threshold
-    //  const referenceTime = new Date(); // Set your reference time
-
-    //  if (lastPasswordChangeTime < referenceTime) {
-    //    res.status(200).json({ message: 'Password has been changed' });
-
-    //  }else{
-    //    res.status(401).json({ message: 'Password has not been changed' });
-    //  }
-
   } catch (error) {
     // Handle authentication errors
     res.status(401).json({ message: 'Invalid credentials' });
