@@ -295,7 +295,16 @@ app.post('/email-verification', [
 
 
 // Sends verification email to the user
-app.post('/verify-email', async (req, res) => {
+app.post('/verify-email', [
+  check('email').isEmail().withMessage('Invalid email address'),
+  check('code').isEmail().notEmpty('Invalid code')
+], async (req, res) => {
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
 
   try {
     const { code, email } = req.query;
