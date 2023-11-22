@@ -64,6 +64,9 @@ app.post('/create-user', [
       emailVerified: false,
     });
 
+    console.log("Email: ",email)
+    console.log("Password: ", password)
+
     await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
 
     // Send the random password to user's email
@@ -196,6 +199,9 @@ app.post("/reset-password", [
 ], (req, res) => {
 
   const { email, url } = req.body; // Get the user's email from the request body
+
+  console.log("Reset-email: ", email)
+  console.log("Reset-redirect-url: ", url)
 
   const actionCodeSettings = {
     url: url, // URL where the user will be redirected after email verification
