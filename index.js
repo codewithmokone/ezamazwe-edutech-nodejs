@@ -268,11 +268,6 @@ app.post('/email-verification', [
   try {
     const { email } = req.body;
 
-    // const actionCodeSettings = {
-    //   url: 'https://edutech-app-eecfd.web.app/verify-email', // URL where the user will be redirected after email verification
-    //   handleCodeInApp: true // This enables the application to handle the code in the app
-    // };
-
     const link = await generateVerificationLink(email);
 
     // Email content and configuration
@@ -307,7 +302,8 @@ app.post('/verify-email', [
   }
 
   try {
-    const { code, email } = req.query;
+    
+    const { code, email } = req.body;
 
     console.log("Code: ", code);
     console.log("Email: ", email);
