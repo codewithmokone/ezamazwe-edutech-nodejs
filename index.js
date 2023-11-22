@@ -117,8 +117,8 @@ app.put('/update-password-reset', async (req, res) => {
       return res.status(400).send('Email is required.');
     }
 
-     // Email content and configuration
-     const mailOptions = {
+    // Email content and configuration
+    const mailOptions = {
       from: process.env.MAIL_USERNAME,
       to: email,
       subject: 'Password Update',
@@ -139,7 +139,7 @@ app.put('/update-password-reset', async (req, res) => {
 
     const user = await admin.auth().getUserByEmail(email); // Gets user's profile information using email
 
-    res.status(200).json({ message: "Successful",  ...user.customClaims });
+    res.status(200).json({ message: "Successful", ...user.customClaims });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -195,7 +195,7 @@ app.post("/reset-password", [
   check('email').isEmail().withMessage('Invalid email address'),
 ], (req, res) => {
 
-  const {email, url} = req.body; // Get the user's email from the request body
+  const { email, url } = req.body; // Get the user's email from the request body
 
   const actionCodeSettings = {
     url: url, // URL where the user will be redirected after email verification
@@ -237,7 +237,7 @@ async function generateVerificationLink(email) {
     const hash = crypto.randomBytes(32).toString('hex');
 
     // Const for the verification link
-    const verificationLink = `https://ezamazwe-edutech-nodejs.onrender.com/verify-email/?code=${hash}&email=${email}`;
+    const verificationLink = `https://edutech-app-eecfd.web.app/verify-email/?code=${hash}&email=${email}`;
 
     // Add the email and verification code to Firestore collection
     await db.collection('verifyEmail').add({
@@ -262,12 +262,12 @@ app.post('/email-verification', [
   try {
     const { email } = req.body;
 
-    const actionCodeSettings = {
-      url: 'https://ezamazwe-edutech-nodejs.onrender.com/verify-email', // URL where the user will be redirected after email verification
-      handleCodeInApp: true // This enables the application to handle the code in the app
-    };
+    // const actionCodeSettings = {
+    //   url: 'https://edutech-app-eecfd.web.app/verify-email', // URL where the user will be redirected after email verification
+    //   handleCodeInApp: true // This enables the application to handle the code in the app
+    // };
 
-    const link = await generateVerificationLink(email, actionCodeSettings);
+    const link = await generateVerificationLink(email);
 
     // Email content and configuration
     const mailOptions = {
@@ -330,6 +330,45 @@ app.post('/verify-email', async (req, res) => {
   } catch (error) {
     console.error('Error verifying email:', error);
     return res.status(500).json({ error: 'Failed to verify email.' });
+  }
+});
+
+
+// Handles sending contact us message to admin/info desk
+app.post('/send-contactus-email', [
+  check('email').isEmail().withMessage('Invalid email address'),
+  check('subject').notEmpty().withMessage('Provide subject'),
+  check('message').notEmpty().withMessage('Provide message'),
+  check('firstName').notEmpty().withMessage('Provide firstName'),
+  check('lastName').notEmpty().withMessage('Provide lastName'),
+], async (req, res) => {
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors });
+  }
+
+  try {
+
+    const { email, firstName, lastName, subject, message } = req.body;
+
+    // Email content and configuration
+    const mailOptions = {
+      from: process.env.MAIL_USERNAME,
+      to: process.env.MAIL_USERNAME,
+      subject: subject,
+      text: `Hi, \nNames: ${firstName} ${lastName}. \nEmail: ${email} \nMessage: ${message}`,
+      // text: "Hi. " + message,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent: ', info.response);
+    res.status(200).json({ message: 'Email sent successfully!' });
+
+  } catch (error) {
+    console.error('Error sending email: ', error);
+    res.status(500).json({ error: 'Failed to send email' });
   }
 });
 
