@@ -290,10 +290,7 @@ app.post('/email-verification', [
 
 
 // Sends verification email to the user
-app.post('/verify-email', [
-  check('email').isEmail().withMessage('Invalid email address'),
-  check('code').notEmpty('Invalid code')
-], async (req, res) => {
+app.post('/verify-email', async (req, res) => {
 
   // const errors = validationResult(req);
 
