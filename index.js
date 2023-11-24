@@ -43,7 +43,14 @@ app.get('/', (req, res) => {
 });
 
 
-// Create new admin
+/**
+ * Creating admin user endpoint.
+ * @param {string} email - admin email address.
+ * @param {string} name - admin name.
+ * @param {string} phoneNumber - admin phone number.
+ * 
+ * Returns - Admin created successfully or error message
+ */
 app.post('/create-user', [
   check('email').isEmail().withMessage('Invalid email address'),
   check('name').isEmail().withMessage('Provide a name'),
@@ -67,14 +74,14 @@ app.post('/create-user', [
     console.log("Email: ",email)
     console.log("Password: ", password)
 
-    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
+    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "owner", forcePasswordReset: true });
 
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
 
     const user = await admin.auth().getUserByEmail(email);
 
-    res.status(200).json({ message: "User created successfully", userRecord: user });
+    res.status(200).json({ message: "Admin created successfully", userRecord: user });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -110,7 +117,12 @@ app.put('/admin-update', async (req, res) => {
 });
 
 
-// Handles updating admin password
+/**
+ * Admin password update endpoint and sends a notification via email
+ * @param {string} email - admin email address.
+ * 
+ * Returns - Password updated successfully
+ */
 app.put('/update-password-reset', async (req, res) => {
 
   try {
@@ -150,7 +162,11 @@ app.put('/update-password-reset', async (req, res) => {
 });
 
 
-// Login endpoint for admin
+/**
+ * Admin login endpoint.
+ * @param {string} email - admin email address.
+ * @param {alphanumeric} pasword - admin password.
+ */
 app.post('/admin-login', [
   check('email').isEmail().withMessage('Invalid email address'),
   check('password').isLength({ min: 6, max: 30 }).withMessage('Password must be between 6 and 30 characters')
@@ -193,7 +209,10 @@ app.post('/admin-login', [
 });
 
 
-// Handles the reset function 
+/**
+ * Resets forgoting password
+ * @param {string} email - user's email.
+ */
 app.post("/reset-password", [
   check('email').isEmail().withMessage('Invalid email address'),
 ], (req, res) => {
@@ -261,7 +280,10 @@ async function generateVerificationLink(email) {
 }
 
 
-// Send account verification email to user
+/**
+ * Sends an email to the user for account verification
+ * @param {string} email - user email address.
+ */
 app.post('/email-verification', [
   check('email').isEmail().withMessage('Invalid email address'),
 ], async (req, res) => {
@@ -289,21 +311,16 @@ app.post('/email-verification', [
 });
 
 
-// Sends verification email to the user
+/**
+ * Checks if the code and email match, and verifies account.
+ * @param {string} email - user email address.
+ * @param {hex} code - user generated code.
+ */
 app.post('/verify-email', async (req, res) => {
-
-  // const errors = validationResult(req);
-
-  // if (!errors.isEmpty()) {
-  //   return res.status(400).json({ errors: errors.array() });
-  // }
 
   try {
 
     const { code, email } = req.body;
-
-    console.log("Code: ", code);
-    console.log("Email: ", email);
 
     // Check if 'code' and 'email' parameters exist
     if (!code || !email) {
@@ -342,7 +359,16 @@ app.post('/verify-email', async (req, res) => {
 });
 
 
-// Handles sending contact us message to admin/info desk
+/**
+ * Sends an email to the info desk.
+ * @param {string} email - user email address.
+ * @param {string} subject - subject from the form.
+ * @param {string} message - message from the form.
+ * @param {string} firstName - first name from the form.
+ * @param {string} lastName - last name from the form.
+ * 
+ * Returns -  Email sent successful or error message 
+ */
 app.post('/send-contactus-email', [
   check('email').isEmail().withMessage('Invalid email address'),
   check('subject').notEmpty().withMessage('Provide subject'),
@@ -367,7 +393,6 @@ app.post('/send-contactus-email', [
       to: process.env.MAIL_USERNAME,
       subject: subject,
       text: `Hi, \nNames: ${firstName} ${lastName}. \nEmail: ${email} \nMessage: ${message}`,
-      // text: "Hi. " + message,
     };
 
     const info = await transporter.sendMail(mailOptions);
@@ -381,7 +406,12 @@ app.post('/send-contactus-email', [
 });
 
 
-// Checks if the users email has been verified
+/**
+ * Checks if the email has been verifies.
+ * @param {string} email - user/admin email address.
+ * 
+ * Returns - Email is verified on success or email is not verified
+ */
 app.get('/check-email-verification', async (req, res) => {
   try {
     const { email } = req.query;
@@ -477,7 +507,11 @@ app.post('/change-admin-role', (req, res) => {
 });
 
 
-// Fetch and view user records
+/**
+ * Endpoint for viewing all the users.
+ * 
+ * Returns - List of users
+ */
 app.get('/view-users', async (req, res) => {
   try {
     const userRecords = await admin.auth().listUsers();
@@ -490,7 +524,12 @@ app.get('/view-users', async (req, res) => {
 });
 
 
-// Delete a specific user
+/**
+ * Deletes a user using a user Id.
+ * @param {alphanumeric} uid - user Identity.
+ * 
+ * Returns -  Email sent successful or error message 
+ */
 app.delete('/delete-user', async (req, res) => {
   const uid = req.body.uid;     // User's UID to delete
 
