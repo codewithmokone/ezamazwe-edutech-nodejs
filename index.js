@@ -74,7 +74,7 @@ app.post('/create-user', [
     console.log("Email: ",email)
     console.log("Password: ", password)
 
-    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "owner", forcePasswordReset: true });
+    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
 
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
