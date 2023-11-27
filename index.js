@@ -75,6 +75,7 @@ app.post('/create-user', [
     console.log("Password: ", password)
 
     await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
+    // await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "owner", forcePasswordReset: false });
 
     // Send the random password to user's email
     await sendRandomPasswordEmail(email, password)
@@ -147,7 +148,7 @@ app.put('/update-password-reset', async (req, res) => {
 
     const userRecord = await admin.auth().getUserByEmail(email);
 
-    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: false });
+    await admin.auth().setCustomUserClaims(userRecord.uid, { forcePasswordReset: false });
 
     await getAuth().updateUser(userRecord.uid, { emailVerified: true }); // Sets the emailVerified to true 
 
@@ -538,6 +539,34 @@ app.delete('/delete-user', async (req, res) => {
     res.status(200).json({ message: 'User deleted successfully' });
   } catch (error) {
     res.status(400).json({ error: error.message });
+  }
+});
+
+
+app.post('/subscribe', async (req, res) => {
+
+  const { subscription_type, frequency, cycles } = req.body;
+
+  const subscriptionData = {
+      "merchant_id": "10000100",
+      "merchant_key": "46f0cd694581a",
+      "amount": "100",
+      "item_name": "ezamazwe_subcription",
+      "subscription_type": "1",
+      "frequency": "3",
+      "cycles": "12",
+  };
+
+  const signature = generateSignature(payfastMerchantKey)
+
+  // console.log("Client data", signature)
+
+  try {
+      const response = await fetch.post(`https://sandbox.payfast.co.za/eng/process`, subscriptionData);
+      res.redirect(response.data);
+  } catch (error) {
+      console.error('Error initiating PayFast subscription:', error);
+      res.status(500).send('Failed to initiate subscription');
   }
 });
 
