@@ -148,7 +148,7 @@ app.put('/update-password-reset', async (req, res) => {
 
     const userRecord = await admin.auth().getUserByEmail(email);
 
-    await admin.auth().setCustomUserClaims(userRecord.uid, { forcePasswordReset: false });
+    await admin.auth().setCustomUserClaims(userRecord.uid, {admin: true, permissions: "editor", forcePasswordReset: false });
 
     await getAuth().updateUser(userRecord.uid, { emailVerified: true }); // Sets the emailVerified to true 
 
@@ -543,13 +543,37 @@ app.delete('/delete-user', async (req, res) => {
 });
 
 
+const generateSignature = (data, passPhrase = null) => {
+  // Create parameter string
+  let pfOutput = "";
+  for (let key in data) {
+      if (data.hasOwnProperty(key)) {
+          console.log(key + " " + data[key])
+          if (data[key] !== "") {
+              pfOutput += `${key}=${encodeURIComponent(data[key].trim()).replace(/%20/g, "+")}&`
+          }
+      }
+  }
+
+  // Remove last ampersand
+  let getString = pfOutput.slice(0, -1);
+  if (passPhrase !== null) {
+      getString += `&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`;
+  }
+
+  return crypto.createHash("md5").update(getString).digest("hex");
+};
+
+
 app.post('/subscribe', async (req, res) => {
 
   const { subscription_type, frequency, cycles } = req.body;
 
+  const payfastMerchantKey = "46f0cd694581a";
+
   const subscriptionData = {
       "merchant_id": "10000100",
-      "merchant_key": "46f0cd694581a",
+      "merchant_key": payfastMerchantKey,
       "amount": "100",
       "item_name": "ezamazwe_subcription",
       "subscription_type": "1",
@@ -562,7 +586,7 @@ app.post('/subscribe', async (req, res) => {
   // console.log("Client data", signature)
 
   try {
-      const response = await fetch.post(`https://sandbox.payfast.co.za/eng/process`, subscriptionData);
+      const response = await axios.post(`https://sandbox.payfast.co.za/eng/process`, subscriptionData);
       res.redirect(response.data);
   } catch (error) {
       console.error('Error initiating PayFast subscription:', error);
