@@ -629,7 +629,7 @@ app.post('/subscribe', async (req, res) => {
 
   try {
 
-    const payFastUrl = 'https://sandbox.payfast.co.za/eng/process';
+    const payFastUrl = 'https://sandbox.payfast.co.za/eng/process'
 
     const htmlResponse = `
         <html>
@@ -648,7 +648,7 @@ app.post('/subscribe', async (req, res) => {
         </html>
     `;
       res.send(htmlResponse);
-      res.redirect(response.data);
+      // res.redirect(response.data);
   } catch (error) {
       console.error('Error initiating PayFast subscription:', error);
       res.status(500).send('Failed to initiate subscription');
