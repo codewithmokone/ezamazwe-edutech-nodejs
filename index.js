@@ -4,6 +4,10 @@ const express = require('express');     //express - Creates an Express applicati
 
 require("dotenv").config()
 
+const cors = require('cors');
+
+const bodyParser = require('body-parser');
+
 const url = require('url');
 
 const crypto = require('crypto');
@@ -13,11 +17,11 @@ const nodemailer = require('nodemailer');
 const admin = require('firebase-admin');    //import the firebase-admin package
 const { getAuth } = require('firebase-admin/auth');
 
-const cors = require('cors')
-
 const { check, validationResult } = require('express-validator');
 
 const app = express();
+
+const axios = require('axios');
 
 const port = process.env.PORT || 4000;
 
@@ -36,6 +40,7 @@ const db = admin.firestore();
 app.use(express.json());
 
 app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 // Default home page
 app.get('/', (req, res) => {
@@ -565,9 +570,29 @@ const generateSignature = (data, passPhrase = null) => {
 };
 
 
-app.post('/subscribe', async (req, res) => {
+app.post('/payfast/callback', (req, res) => {
+  const postData = req.body;
+  const signature = req.get('pf_signature');
 
-  const { subscription_type, frequency, cycles } = req.body;
+  const data = JSON.stringify(postData);
+  const calculatedSignature = crypto
+      .createHmac('md5', secureKey)
+      .update(data)
+      .digest('hex');
+
+  if (calculatedSignature === signature) {
+      console.log('PayFast callback received and validated');
+      console.log('Subscription data:', postData);
+
+      res.send('OK');
+  } else {
+      console.error('Invalid PayFast callback signature');
+      res.status(400).send('Invalid Signature');
+  }
+});
+
+
+app.post('/cancel-subscribe', async (req, res) => {
 
   const payfastMerchantKey = "46f0cd694581a";
 
@@ -578,20 +603,85 @@ app.post('/subscribe', async (req, res) => {
       "item_name": "ezamazwe_subcription",
       "subscription_type": "1",
       "frequency": "3",
-      "cycles": "12",
+      "cycles": "0",
   };
 
   const signature = generateSignature(payfastMerchantKey)
 
-  // console.log("Client data", signature)
+  console.log("Client data", signature)
 
   try {
-      const response = await axios.post(`https://sandbox.payfast.co.za/eng/process`, subscriptionData);
+      const response = await axios.post(`https://api.payfast.co.za/subscriptions/dc0521d3-55fe-269b-fa00-b647310d760f/cancel`, subscriptionData);
       res.redirect(response.data);
   } catch (error) {
       console.error('Error initiating PayFast subscription:', error);
       res.status(500).send('Failed to initiate subscription');
   }
+});
+
+app.post('/subscribe', async (req, res) => {
+
+  const formData = req.body;
+
+  const payfastMerchantKey = "46f0cd694581a";
+
+  const signature = generateSignature(payfastMerchantKey)
+
+  try {
+
+    const payFastUrl = 'https://sandbox.payfast.co.za/eng/process';
+
+    const htmlResponse = `
+        <html>
+        <body>
+            <form action="${payFastUrl}" method="post">
+                ${Object.entries(formData).map(([key, value]) => `
+                    <input name="${key}" type="hidden" value="${value.trim()}" />
+                `).join('')}
+                <input type="submit" value="Pay Now" />
+            </form>
+        </body>
+        <script>
+            // Automatically submit the form when the page loads
+            document.forms[0].submit();
+        </script>
+        </html>
+    `;
+      res.send(htmlResponse);
+      res.redirect(response.data);
+  } catch (error) {
+      console.error('Error initiating PayFast subscription:', error);
+      res.status(500).send('Failed to initiate subscription');
+  }
+});
+
+
+
+app.post('/pay', function (req, res) {
+
+  const formData = req.body;
+  console.log('Data: ',formData)
+
+  const payFastUrl = 'https://sandbox.payfast.co.za/eng/process';
+
+  const htmlResponse = `
+      <html>
+      <body>
+          <form action="${payFastUrl}" method="post">
+              ${Object.entries(formData).map(([key, value]) => `
+                  <input name="${key}" type="hidden" value="${value.trim()}" />
+              `).join('')}
+              <input type="submit" value="Pay Now" />
+          </form>
+      </body>
+      <script>
+          // Automatically submit the form when the page loads
+          document.forms[0].submit();
+      </script>
+      </html>
+  `;
+
+  res.send(htmlResponse);
 });
 
 
