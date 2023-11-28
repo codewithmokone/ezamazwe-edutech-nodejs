@@ -6,6 +6,8 @@ require("dotenv").config()
 
 const cors = require('cors');
 
+// const payfast = require('payfast');
+
 const bodyParser = require('body-parser');
 
 const url = require('url');
@@ -76,7 +78,7 @@ app.post('/create-user', [
       emailVerified: false,
     });
 
-    console.log("Email: ",email)
+    console.log("Email: ", email)
     console.log("Password: ", password)
 
     await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
@@ -153,7 +155,7 @@ app.put('/update-password-reset', async (req, res) => {
 
     const userRecord = await admin.auth().getUserByEmail(email);
 
-    await admin.auth().setCustomUserClaims(userRecord.uid, {admin: true, permissions: "editor", forcePasswordReset: false });
+    await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: false });
 
     await getAuth().updateUser(userRecord.uid, { emailVerified: true }); // Sets the emailVerified to true 
 
@@ -548,46 +550,24 @@ app.delete('/delete-user', async (req, res) => {
 });
 
 
-const generateSignature = (data, passPhrase = null) => {
-  // Create parameter string
-  let pfOutput = "";
-  for (let key in data) {
-      if (data.hasOwnProperty(key)) {
-          console.log(key + " " + data[key])
-          if (data[key] !== "") {
-              pfOutput += `${key}=${encodeURIComponent(data[key].trim()).replace(/%20/g, "+")}&`
-          }
-      }
-  }
-
-  // Remove last ampersand
-  let getString = pfOutput.slice(0, -1);
-  if (passPhrase !== null) {
-      getString += `&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`;
-  }
-
-  return crypto.createHash("md5").update(getString).digest("hex");
-};
-
-
 app.post('/payfast/callback', (req, res) => {
   const postData = req.body;
   const signature = req.get('pf_signature');
 
   const data = JSON.stringify(postData);
   const calculatedSignature = crypto
-      .createHmac('md5', secureKey)
-      .update(data)
-      .digest('hex');
+    .createHmac('md5', secureKey)
+    .update(data)
+    .digest('hex');
 
   if (calculatedSignature === signature) {
-      console.log('PayFast callback received and validated');
-      console.log('Subscription data:', postData);
+    console.log('PayFast callback received and validated');
+    console.log('Subscription data:', postData);
 
-      res.send('OK');
+    res.send('OK');
   } else {
-      console.error('Invalid PayFast callback signature');
-      res.status(400).send('Invalid Signature');
+    console.error('Invalid PayFast callback signature');
+    res.status(400).send('Invalid Signature');
   }
 });
 
@@ -597,13 +577,13 @@ app.post('/cancel-subscribe', async (req, res) => {
   const payfastMerchantKey = "46f0cd694581a";
 
   const subscriptionData = {
-      "merchant_id": "10000100",
-      "merchant_key": payfastMerchantKey,
-      "amount": "100",
-      "item_name": "ezamazwe_subcription",
-      "subscription_type": "1",
-      "frequency": "3",
-      "cycles": "0",
+    "merchant_id": "10000100",
+    "merchant_key": payfastMerchantKey,
+    "amount": "100",
+    "item_name": "ezamazwe_subcription",
+    "subscription_type": "1",
+    "frequency": "3",
+    "cycles": "0",
   };
 
   const signature = generateSignature(payfastMerchantKey)
@@ -611,25 +591,48 @@ app.post('/cancel-subscribe', async (req, res) => {
   console.log("Client data", signature)
 
   try {
-      const response = await axios.post(`https://api.payfast.co.za/subscriptions/dc0521d3-55fe-269b-fa00-b647310d760f/cancel`, subscriptionData);
-      res.redirect(response.data);
+    const response = await axios.post(`https://api.payfast.co.za/subscriptions/dc0521d3-55fe-269b-fa00-b647310d760f/cancel`, subscriptionData);
+    res.redirect(response.data);
   } catch (error) {
-      console.error('Error initiating PayFast subscription:', error);
-      res.status(500).send('Failed to initiate subscription');
+    console.error('Error initiating PayFast subscription:', error);
+    res.status(500).send('Failed to initiate subscription');
   }
 });
+
+// Signature generation
+const generateAPISignature = (data, passPhrase = null) => {
+  // Arrange the array by key alphabetically for API calls
+  let ordered_data = {};
+  Object.keys(data).sort().forEach(key => {
+    ordered_data[key] = data[key];
+  });
+  data = ordered_data;
+
+  // Create the get string
+  let getString = '';
+  for (let key in data) {
+    getString += key + '=' + encodeURIComponent(data[key]).replace(/%20/g, '+') + '&';
+  }
+
+  // Remove the last '&'
+  getString = getString.substring(0, getString.length - 1);
+  if (passPhrase !== null) { getString += `&passphrase=${encodeURIComponent(passPhrase.trim()).replace(/%20/g, "+")}`; }
+
+  // Hash the data and create the signature
+  return crypto.createHash("md5").update(getString).digest("hex");
+}
 
 app.post('/subscribe', async (req, res) => {
 
   const formData = req.body;
 
-  const payfastMerchantKey = "46f0cd694581a";
+  const passPhrase = "46f0cd694581a";
 
-  const signature = generateSignature(payfastMerchantKey)
+  const signature = generateAPISignature(passPhrase)
 
   try {
 
-    const payFastUrl = 'https://sandbox.payfast.co.za/eng/process'
+    const payFastUrl = 'https://www.payfast.co.za'
 
     const htmlResponse = `
         <html>
@@ -638,6 +641,7 @@ app.post('/subscribe', async (req, res) => {
                 ${Object.entries(formData).map(([key, value]) => `
                     <input name="${key}" type="hidden" value="${value.trim()}" />
                 `).join('')}
+
                 <input type="submit" value="Pay Now" />
             </form>
         </body>
@@ -647,22 +651,31 @@ app.post('/subscribe', async (req, res) => {
         </script>
         </html>
     `;
-      res.send(htmlResponse);
-      // res.redirect(response.data);
+    res.send(htmlResponse);
+    // res.redirect(response.data);
   } catch (error) {
-      console.error('Error initiating PayFast subscription:', error);
-      res.status(500).send('Failed to initiate subscription');
+    console.error('Error initiating PayFast subscription:', error);
+    res.status(500).send('Failed to initiate subscription');
   }
 });
-
 
 
 app.post('/pay', function (req, res) {
 
   const formData = req.body;
-  console.log('Data: ',formData)
 
-  const payFastUrl = 'https://sandbox.payfast.co.za/eng/process';
+  console.log("Details: ", formData)
+
+  const passPhrase = "46f0cd694581a";
+
+  const signature = generateAPISignature(passPhrase)
+
+  // console.log('Signature: ', signature)
+
+  const payFastUrl = 'https://www.payfast.co.za/eng/process';
+
+  // const payFastUrl = ' https://api.payfast.co.za';
+
 
   const htmlResponse = `
       <html>
@@ -671,7 +684,9 @@ app.post('/pay', function (req, res) {
               ${Object.entries(formData).map(([key, value]) => `
                   <input name="${key}" type="hidden" value="${value.trim()}" />
               `).join('')}
-              <input type="submit" value="Pay Now" />
+                <input type="hidden" name="merchant_id" value="15516650" />
+                <input type="hidden" name="merchant_key" value="wurr758lag1yt" />
+                <input type="hidden" name="amount" value="100.00" />
           </form>
       </body>
       <script>
@@ -682,6 +697,61 @@ app.post('/pay', function (req, res) {
   `;
 
   res.send(htmlResponse);
+});
+
+// const PAYFAST_API_URL = 'https://api.payfast.co.za/ping?testing=true'; // Replace with the appropriate PayFast API endpoint
+
+
+
+
+app.post('/pay2', async (req, res) => {
+
+  try {
+
+    const { amount } = req.body;
+
+    const data = {
+      "amount": amount,
+      "frequency": 3,
+      "cycles": 12
+    };
+
+
+    const passPhrase = ''
+    const now = new Date();
+    const isoDateString = now.toISOString();
+    console.log(isoDateString);
+    // const merchant_id = '10031961';
+    // const merchant_key = 'm55oaux6bncnm';
+
+    const signature = generateAPISignature(data, passPhrase);
+    console.log("Signature: ", signature)
+
+    const response = await fetch('https://api.payfast.co.za/ping', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'merchant_id': "10031961",
+        "version": "v1",
+        'timestamp': isoDateString,
+        'signature': signature
+      },
+      // body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error('PayFast API request failed');
+    }
+
+    const result = await response.json();
+    console.log('PayFast API Response:', result);
+    res.status(200).json(result);
+    return result;
+  } catch (error) {
+    console.error('Error occurred:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+
 });
 
 
