@@ -572,33 +572,6 @@ app.post('/payfast/callback', (req, res) => {
 });
 
 
-app.post('/cancel-subscribe', async (req, res) => {
-
-  const payfastMerchantKey = "46f0cd694581a";
-
-  const subscriptionData = {
-    "merchant_id": "10000100",
-    "merchant_key": payfastMerchantKey,
-    "amount": "100",
-    "item_name": "ezamazwe_subcription",
-    "subscription_type": "1",
-    "frequency": "3",
-    "cycles": "0",
-  };
-
-  const signature = generateSignature(payfastMerchantKey)
-
-  console.log("Client data", signature)
-
-  try {
-    const response = await axios.post(`https://api.payfast.co.za/subscriptions/dc0521d3-55fe-269b-fa00-b647310d760f/cancel`, subscriptionData);
-    res.redirect(response.data);
-  } catch (error) {
-    console.error('Error initiating PayFast subscription:', error);
-    res.status(500).send('Failed to initiate subscription');
-  }
-});
-
 // Signature generation
 const generateAPISignature = (data, passPhrase = null) => {
   // Arrange the array by key alphabetically for API calls
@@ -622,49 +595,12 @@ const generateAPISignature = (data, passPhrase = null) => {
   return crypto.createHash("md5").update(getString).digest("hex");
 }
 
-app.post('/subscribe', async (req, res) => {
-
-  const formData = req.body;
-
-  const passPhrase = "46f0cd694581a";
-
-  const signature = generateAPISignature(passPhrase)
-
-  try {
-
-    const payFastUrl = 'https://www.payfast.co.za'
-
-    const htmlResponse = `
-        <html>
-        <body>
-            <form action="${payFastUrl}" method="post">
-                ${Object.entries(formData).map(([key, value]) => `
-                    <input name="${key}" type="hidden" value="${value.trim()}" />
-                `).join('')}
-
-                <input type="submit" value="Pay Now" />
-            </form>
-        </body>
-        <script>
-            // Automatically submit the form when the page loads
-            document.forms[0].submit();
-        </script>
-        </html>
-    `;
-    res.send(htmlResponse);
-    // res.redirect(response.data);
-  } catch (error) {
-    console.error('Error initiating PayFast subscription:', error);
-    res.status(500).send('Failed to initiate subscription');
-  }
-});
-
 
 app.post('/payment', function (req, res) {
 
   const formData = req.body;
 
-  const passPhrase = "46f0cd694581a";
+  const passPhrase = process.env.PASSPHRASE;
 
   const signature = generateAPISignature(passPhrase)
 
@@ -679,8 +615,8 @@ app.post('/payment', function (req, res) {
               ${Object.entries(formData).map(([key, value]) => `
                   <input name="${key}" type="hidden" value="${value.trim()}" />
               `).join('')}
-                <input type="hidden" name="merchant_id" value="15516650" />
-                <input type="hidden" name="merchant_key" value="wurr758lag1yt" />
+                <input type="hidden" name="merchant_id" value="${process.env.MERCHANT_ID}" />
+                <input type="hidden" name="merchant_key" value="${process.env.MERCHANT_KEY}" />
                 <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
                 <input type="hidden" name="cancel_url" value="https://014d-41-150-219-68.ngrok-free.app/Cancel" />
                 <input type="hidden" name="notify_url" value="https://www.example.com/notify" />
