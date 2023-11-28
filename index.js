@@ -660,22 +660,17 @@ app.post('/subscribe', async (req, res) => {
 });
 
 
-app.post('/pay', function (req, res) {
+app.post('/payment', function (req, res) {
 
   const formData = req.body;
-
-  console.log("Details: ", formData)
 
   const passPhrase = "46f0cd694581a";
 
   const signature = generateAPISignature(passPhrase)
 
-  // console.log('Signature: ', signature)
+  console.log('Signature: ', signature)
 
   const payFastUrl = 'https://www.payfast.co.za/eng/process';
-
-  // const payFastUrl = ' https://api.payfast.co.za';
-
 
   const htmlResponse = `
       <html>
@@ -686,7 +681,11 @@ app.post('/pay', function (req, res) {
               `).join('')}
                 <input type="hidden" name="merchant_id" value="15516650" />
                 <input type="hidden" name="merchant_key" value="wurr758lag1yt" />
+                <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
+                <input type="hidden" name="cancel_url" value="https://014d-41-150-219-68.ngrok-free.app/Cancel" />
+                <input type="hidden" name="notify_url" value="https://www.example.com/notify" />
                 <input type="hidden" name="amount" value="100.00" />
+                <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
           </form>
       </body>
       <script>
@@ -697,61 +696,6 @@ app.post('/pay', function (req, res) {
   `;
 
   res.send(htmlResponse);
-});
-
-// const PAYFAST_API_URL = 'https://api.payfast.co.za/ping?testing=true'; // Replace with the appropriate PayFast API endpoint
-
-
-
-
-app.post('/pay2', async (req, res) => {
-
-  try {
-
-    const { amount } = req.body;
-
-    const data = {
-      "amount": amount,
-      "frequency": 3,
-      "cycles": 12
-    };
-
-
-    const passPhrase = ''
-    const now = new Date();
-    const isoDateString = now.toISOString();
-    console.log(isoDateString);
-    // const merchant_id = '10031961';
-    // const merchant_key = 'm55oaux6bncnm';
-
-    const signature = generateAPISignature(data, passPhrase);
-    console.log("Signature: ", signature)
-
-    const response = await fetch('https://api.payfast.co.za/ping', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'merchant_id': "10031961",
-        "version": "v1",
-        'timestamp': isoDateString,
-        'signature': signature
-      },
-      // body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      throw new Error('PayFast API request failed');
-    }
-
-    const result = await response.json();
-    console.log('PayFast API Response:', result);
-    res.status(200).json(result);
-    return result;
-  } catch (error) {
-    console.error('Error occurred:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-
 });
 
 
