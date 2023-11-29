@@ -398,6 +398,8 @@ app.post('/send-contactus-email', [
 
     const { email, firstName, lastName, subject, message } = req.body;
 
+    console.log(email)
+
     // Email content and configuration
     const mailOptions = {
       from: process.env.MAIL_USERNAME,
@@ -641,8 +643,10 @@ app.post('/payment', function (req, res) {
           `).join('')}
             <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
             <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
-            <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/nofity_url" />
+            <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
             <input type="hidden" name="amount" value="100.00" />
+            <input type="hidden" name="pf_payment_id" value="1089250" />
+            <input type="hidden" name="payment_status" value="COMPLETE" />
             <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
       </form>
   </body>
@@ -657,7 +661,7 @@ app.post('/payment', function (req, res) {
   res.send(htmlResponse);
 });
 
-app.post('/notify_url', (req,res) => {
+app.get('/notify_url', (req,res) => {
 
   console.log("Payment Notification: ", req.query)
   console.log("Payment Notification: ", req.body)
