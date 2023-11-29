@@ -607,34 +607,59 @@ app.post('/payment', function (req, res) {
 
   const signature = generateAPISignature(passPhrase)
 
-  const payFastUrl = 'https://www.payfast.co.za/eng/process';
+  const payFastUrl = 'https://sandbox.payfast.co.za/eng/process';
+
+  // const htmlResponse = `
+  //     <html>
+  //     <body>
+  //         <form action="${payFastUrl}" method="post">
+  //             ${Object.entries(formData).map(([key, value]) => `
+  //                 <input name="${key}" type="hidden" value="${value.trim()}" />
+  //             `).join('')}
+  //               <input type="hidden" name="merchant_id" value="${process.env.MERCHANT_ID}" />
+  //               <input type="hidden" name="merchant_key" value="${process.env.MERCHANT_KEY}" />
+  //               <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
+  //               <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
+  //               <input type="hidden" name="notify_url" value="https://www.example.com/notify" />
+  //               <input type="hidden" name="amount" value="100.00" />
+  //               <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
+  //         </form>
+  //     </body>
+  //     <script>
+  //         // Automatically submit the form when the page loads
+  //         document.forms[0].submit();
+  //     </script>
+  //     </html>
+  // `;
 
   const htmlResponse = `
-      <html>
-      <body>
-          <form action="${payFastUrl}" method="post">
-              ${Object.entries(formData).map(([key, value]) => `
-                  <input name="${key}" type="hidden" value="${value.trim()}" />
-              `).join('')}
-                <input type="hidden" name="merchant_id" value="${process.env.MERCHANT_ID}" />
-                <input type="hidden" name="merchant_key" value="${process.env.MERCHANT_KEY}" />
-                <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
-                <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
-                <input type="hidden" name="notify_url" value="https://www.example.com/notify" />
-                <input type="hidden" name="amount" value="100.00" />
-                <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
-          </form>
-      </body>
-      <script>
-          // Automatically submit the form when the page loads
-          document.forms[0].submit();
-      </script>
-      </html>
-  `;
+  <html>
+  <body>
+      <form action="${payFastUrl}" method="post">
+          ${Object.entries(formData).map(([key, value]) => `
+              <input name="${key}" type="hidden" value="${value.trim()}" />
+          `).join('')}
+            <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
+            <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
+            <input type="hidden" name="notify_url" value="https://edutech-app-eecfd.web.app/user" />
+            <input type="hidden" name="amount" value="100.00" />
+            <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
+      </form>
+  </body>
+  <script>
+      // Automatically submit the form when the page loads
+      document.forms[0].submit();
+  </script>
+  </html>
+`;
+
 
   res.send(htmlResponse);
 });
 
+app.post('/notify_url', (req,res) => {
+  console.log()
+})
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
