@@ -641,7 +641,7 @@ app.post('/payment', function (req, res) {
           `).join('')}
             <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
             <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
-            <input type="hidden" name="notify_url" value="https://edutech-app-eecfd.web.app/user" />
+            <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/nofity_url" />
             <input type="hidden" name="amount" value="100.00" />
             <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
       </form>
