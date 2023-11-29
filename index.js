@@ -664,7 +664,7 @@ app.post('/payment', function (req, res) {
 
 
 // Payfast notification
-app.get('/notify_url', (req,res) => {
+app.post('/notify_url', (req,res) => {
 
   // const data = req.body;
   // const data2 = req.query;
