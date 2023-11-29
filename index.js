@@ -646,7 +646,7 @@ app.post('/payment', function (req, res) {
             <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
             <input type="hidden" name="amount" value="100.00" />
             <input type="hidden" name="pf_payment_id" value="1089250" />
-            <input type="hidden" name="payment_status" value="COMPLETE" />
+            <input type="hidden" name="payment_status" value="CANCELLED/COMPLETE" />
             <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
       </form>
   </body>
@@ -661,11 +661,24 @@ app.post('/payment', function (req, res) {
   res.send(htmlResponse);
 });
 
+
+// Payfast notification
 app.get('/notify_url', (req,res) => {
 
-  console.log("Payment Notification: ", req.query)
-  console.log("Payment Notification: ", req.body)
+  const data = req.body;
+
+  console.log("Payment Notification: ", data)
+
+  // Perform necessary operations with the received data
+  // For example, verify the payment, update the database, etc.
+  
+  // Send a response indicating that the notification was received
+  res.status(200).send('Notification Received');
+
 })
+
+
+
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
