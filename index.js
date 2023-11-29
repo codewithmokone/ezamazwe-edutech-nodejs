@@ -604,8 +604,6 @@ app.post('/payment', function (req, res) {
 
   const signature = generateAPISignature(passPhrase)
 
-  console.log('Signature: ', signature)
-
   const payFastUrl = 'https://www.payfast.co.za/eng/process';
 
   const htmlResponse = `
@@ -617,8 +615,8 @@ app.post('/payment', function (req, res) {
               `).join('')}
                 <input type="hidden" name="merchant_id" value="${process.env.MERCHANT_ID}" />
                 <input type="hidden" name="merchant_key" value="${process.env.MERCHANT_KEY}" />
-                <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
-                <input type="hidden" name="cancel_url" value="https://014d-41-150-219-68.ngrok-free.app/Cancel" />
+                <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
+                <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
                 <input type="hidden" name="notify_url" value="https://www.example.com/notify" />
                 <input type="hidden" name="amount" value="100.00" />
                 <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
