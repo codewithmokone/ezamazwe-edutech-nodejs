@@ -645,7 +645,7 @@ app.post('/payment', function (req, res) {
             <input type="hidden" name="merchant_key" value="m55oaux6bncnm" />
             <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
             <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
-            <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
+            <input type="hidden" name="notify_url" value="https://edutech-app-eecfd.web.app/" />
             <input type="hidden" name="amount" value="100.00" />
             <input type="hidden" name="pf_payment_id" value="1089250" />
             <input type="hidden" name="payment_status" value="COMPLETE" />
