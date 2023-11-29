@@ -666,9 +666,11 @@ app.post('/payment', function (req, res) {
 app.get('/notify_url', (req,res) => {
 
   const data = req.body;
+  const data2 = req.query;
 
-  console.log("Payment Notification: ", data)
-  console.log("Payment Notification: ", req.body)
+  console.log("Payment Notification data: ", data)
+  console.log("Payment Notification body: ", req.body)
+  console.log("Payment Notification query: ", req.query)
 
   // Perform necessary operations with the received data
   // For example, verify the payment, update the database, etc.
