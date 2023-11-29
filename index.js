@@ -60,8 +60,8 @@ app.get('/', (req, res) => {
  */
 app.post('/create-user', [
   check('email').isEmail().withMessage('Invalid email address'),
-  check('name').isEmail().withMessage('Provide a name'),
-  check('phoneNumber').isEmail().withMessage('Invalid phone number'),
+  check('name').notEmpty().withMessage('Provide a name'),
+  check('phoneNumber').notEmpty().withMessage('Invalid phone number'),
 ], async (req, res) => {
 
   const { email, name, phoneNumber } = req.body;
@@ -81,11 +81,13 @@ app.post('/create-user', [
     console.log("Email: ", email)
     console.log("Password: ", password)
 
+    const url = "https://ezamazwe-edutech-cms.firebaseapp.com/"
+
     await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "editor", forcePasswordReset: true });
     // await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true, permissions: "owner", forcePasswordReset: false });
 
     // Send the random password to user's email
-    await sendRandomPasswordEmail(email, password)
+    await sendRandomPasswordEmail(email, password, url);
 
     const user = await admin.auth().getUserByEmail(email);
 
@@ -223,6 +225,7 @@ app.post('/admin-login', [
  */
 app.post("/reset-password", [
   check('email').isEmail().withMessage('Invalid email address'),
+  check('url').notEmpty().withMessage('Url not provided'),
 ], (req, res) => {
 
   const { email, url } = req.body; // Get the user's email from the request body
@@ -476,12 +479,12 @@ const transporter = nodemailer.createTransport({
 
 
 // Function to send a random password to the user's email
-async function sendRandomPasswordEmail(email, password) {
+async function sendRandomPasswordEmail(email, password, url) {
   const mailOptions = {
     from: process.env.MAIL_USERNAME,
     to: email,
     subject: "Your Account Information",
-    text: `Your account has been created. Your random password is: ${password}`,
+    text: `Your account has been created. Your random password is: ${password} and follow this link ${url} to login.`,
   };
 
   try {
