@@ -668,6 +668,7 @@ app.get('/notify_url', (req,res) => {
   const data = req.body;
 
   console.log("Payment Notification: ", data)
+  console.log("Payment Notification: ", req.body)
 
   // Perform necessary operations with the received data
   // For example, verify the payment, update the database, etc.
