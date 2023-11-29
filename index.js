@@ -658,7 +658,9 @@ app.post('/payment', function (req, res) {
 });
 
 app.post('/notify_url', (req,res) => {
-  console.log()
+
+  console.log("Payment Notification: ", req.query)
+  console.log("Payment Notification: ", req.body)
 })
 
 app.listen(port, () => {
