@@ -722,9 +722,9 @@ app.post('/notify_url', async (req, res) => {
 
     if (responseData.payment_status === "COMPLETE") {
 
-      const userRef = doc(db, "users", user.uid);
+      // const userRef = doc(db, "users", user.uid);
 
-      await updateDoc(userRef, {
+      const res = await db.collection('users').doc(user.uid).update({
         "subscription": "subscribed",
         "subscriptionStartDate": responseData.billing_date,
         "subscriptionEndDate": endDateFormatted
