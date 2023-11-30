@@ -614,55 +614,75 @@ app.post('/payment', function (req, res) {
 
   const signature = generateAPISignature(passPhrase)
 
+  const payFastUrl = 'https://payfast.co.za/eng/process';
+
+  const htmlResponse = `
+      <html>
+      <body>
+          <form action="${payFastUrl}" method="post">
+              ${Object.entries(formData).map(([key, value]) => `
+                  <input name="${key}" type="hidden" value="${value.trim()}" />
+              `).join('')}
+                <input type="hidden" name="merchant_id" value="${process.env.MERCHANT_ID}" />
+                <input type="hidden" name="merchant_key" value="${process.env.MERCHANT_KEY}" />
+                <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
+                <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
+                <input type="hidden" name="notify_url" value="https://www.example.com/notify" />
+                <input type="hidden" name="amount" value="100.00" />
+                <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
+          </form>
+      </body>
+      <script>
+          // Automatically submit the form when the page loads
+          document.forms[0].submit();
+      </script>
+      </html>
+  `;
+
+//   const htmlResponse = `
+// <html>
+// <body>
+//     <form action="${payFastUrl}" method="post">
+//         ${Object.entries(formData).map(([key, value]) => `
+//             <input name="${key}" type="hidden" value="${value.trim()}" />
+//         `).join('')}
+//           <input type="hidden" name="merchant_id" value="10031961" />
+//           <input type="hidden" name="merchant_key" value="m55oaux6bncnm" />
+//           <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
+//           <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/" />
+//           <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
+//           <input type="hidden" name="amount" value="100.00" />
+//           <input type="hidden" name="subscription_type" value="1">
+//           <input type="hidden" name="recurring_amount" value="100.00">
+//           <input type="hidden" name="frequency" value="4">
+//           <input type="hidden" name="cycles" value="4">
+//           <input type="hidden" name="subscription_notify_email" value="true">
+//           <input type="hidden" name="subscription_notify_webhook" value="true">
+//           <input type="hidden" name="subscription_notify_buyer" value="true">
+//           <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
+//     </form>
+// </body>
+// <script>
+//     // Automatically submit the form when the page loads
+//     document.forms[0].submit();
+// </script>
+// </html>
+// `;
+
+
+  res.send(htmlResponse);
+});
+
+
+app.post('/payment2', function (req, res) {
+
+  const formData = req.body;
+
+  // const passPhrase = process.env.PASSPHRASE;
+
+  // const signature = generateAPISignature(passPhrase)
+
   const payFastUrl = 'https://sandbox.payfast.co.za/eng/process';
-
-  // const htmlResponse = `
-  //     <html>
-  //     <body>
-  //         <form action="${payFastUrl}" method="post">
-  //             ${Object.entries(formData).map(([key, value]) => `
-  //                 <input name="${key}" type="hidden" value="${value.trim()}" />
-  //             `).join('')}
-  //               <input type="hidden" name="merchant_id" value="${process.env.MERCHANT_ID}" />
-  //               <input type="hidden" name="merchant_key" value="${process.env.MERCHANT_KEY}" />
-  //               <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
-  //               <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
-  //               <input type="hidden" name="notify_url" value="https://www.example.com/notify" />
-  //               <input type="hidden" name="amount" value="100.00" />
-  //               <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
-  //         </form>
-  //     </body>
-  //     <script>
-  //         // Automatically submit the form when the page loads
-  //         document.forms[0].submit();
-  //     </script>
-  //     </html>
-  // `;
-
-  //   const htmlResponse = `
-  //   <html>
-  //   <body>
-  //       <form action="${payFastUrl}" method="post">
-  //           ${Object.entries(formData).map(([key, value]) => `
-  //               <input name="${key}" type="hidden" value="${value.trim()}" />
-  //           `).join('')}
-  //             <input type="hidden" name="merchant_id" value="10031961" />
-  //             <input type="hidden" name="merchant_key" value="m55oaux6bncnm" />
-  //             <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
-  //             <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/" />
-  //             <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
-  //             <input type="hidden" name="amount" value="100.00" />
-  //             <input type="hidden" name="pf_payment_id" value="1089250" />
-  //             <input type="hidden" name="payment_status" value="" />
-  //             <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
-  //       </form>
-  //   </body>
-  //   <script>
-  //       // Automatically submit the form when the page loads
-  //       document.forms[0].submit();
-  //   </script>
-  //   </html>
-  // `;
 
   const htmlResponse = `
 <html>
@@ -678,7 +698,6 @@ app.post('/payment', function (req, res) {
           <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
           <input type="hidden" name="amount" value="100.00" />
           <input type="hidden" name="subscription_type" value="1">
-
           <input type="hidden" name="recurring_amount" value="100.00">
           <input type="hidden" name="frequency" value="4">
           <input type="hidden" name="cycles" value="4">
@@ -705,11 +724,8 @@ app.post('/notify_url', async (req, res) => {
   try {
     const responseData = req.body;
 
-    // Log payment status and notification data
-    console.log("Payment Status:", responseData.payment_status);
-    console.log("Payment Notification Data: ", responseData);
+    console.log("Pay History: ", responseData)
 
-    // const subscriptionEndDate = moment([2010, 0, 31]).add(3, 'months');
     const subscriptionEndDate = moment(responseData.billing_date).add(3, 'months');
 
     const endDateFormatted = subscriptionEndDate.format('YYYY-MM-DD');
@@ -718,11 +734,8 @@ app.post('/notify_url', async (req, res) => {
 
     const user = await admin.auth().getUserByEmail(responseData.email_address);
 
-    console.log("User : ", user.uid);
-
+    // Checks if the payment is complete and updates the user profile
     if (responseData.payment_status === "COMPLETE") {
-
-      // const userRef = doc(db, "users", user.uid);
 
       const res = await db.collection('users').doc(user.uid).update({
         "subscription": "subscribed",
@@ -732,9 +745,8 @@ app.post('/notify_url', async (req, res) => {
     }
 
     // Respond with a success message
-    res.status(200).send('Notification Received', responseData);
+    res.status(200).send('Notification Received');
   } catch (error) {
-    // Handle errors appropriately, log them, and respond with an error status
     console.error("Error processing notification:", error);
     res.status(500).send('Internal Server Error');
   }
