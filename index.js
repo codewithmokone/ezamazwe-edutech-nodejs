@@ -666,13 +666,30 @@ app.post('/payment', function (req, res) {
 // Payfast notification
 app.post('/notify_url', (req,res) => {
 
-  const responseData = req.body;
+  try {
+    // Validate and sanitize input if necessary
 
-  console.log("Payment Status: ", responseData.payment_status);
+    const responseData = req.body;
 
-  console.log("Payment Notification data: ", responseData);
+    // Log payment status and notification data
+    console.log("Payment Status:", responseData.payment_status);
+    console.log("Payment Notification Data:", responseData);
 
-  res.status(200).send('Notification Received');
+    // Respond with a success message
+    res.status(200).send('Notification Received', responseData);
+  } catch (error) {
+    // Handle errors appropriately, log them, and respond with an error status
+    console.error("Error processing notification:", error);
+    res.status(500).send('Internal Server Error');
+  }
+
+  // const responseData = req.body;
+
+  // console.log("Payment Status: ", responseData.payment_status);
+
+  // console.log("Payment Notification data: ", responseData);
+
+  // res.status(200).send('Notification Received');
   // res.send('Notification Received');
 
 })
