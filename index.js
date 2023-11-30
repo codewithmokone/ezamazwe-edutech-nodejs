@@ -715,15 +715,16 @@ app.post('/notify_url', async (req, res) => {
 
     const user = await admin.auth().getUserByEmail(responseData.email_address);
 
-    console.log("User : ", user);
+    console.log("User : ", user.uid);
 
     if (responseData.payment_status === "COMPLETE"){
 
-      const frankDocRef = doc(db, "users", "frank");
+      const userRef = doc(db, "users", user.uid);
 
-      await updateDoc(frankDocRef, {
-        "age": 13,
-        "favorites.color": "Red"
+      await updateDoc(userRef, {
+        "subscription": "subscribed",
+        "subscriptionStartDate": responseData.billing_date,
+        "subscriptionEndDate": endDateFormatted
     });
 
 
