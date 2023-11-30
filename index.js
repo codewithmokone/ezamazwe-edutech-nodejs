@@ -697,7 +697,7 @@ app.post('/payment', function (req, res) {
 
 
 // Payfast notification
-app.post('/notify_url', (req, res) => {
+app.post('/notify_url', async (req, res) => {
 
   try {
     const responseData = req.body;
@@ -713,6 +713,22 @@ app.post('/notify_url', (req, res) => {
 
     console.log("Subscription end date: ", endDateFormatted);
 
+    const user = await admin.auth().getUserByEmail(responseData.email_address);
+
+    console.log("User : ", user);
+
+    if (responseData.payment_status === "COMPLETE"){
+
+      const frankDocRef = doc(db, "users", "frank");
+
+      await updateDoc(frankDocRef, {
+        "age": 13,
+        "favorites.color": "Red"
+    });
+
+
+    }
+
     // Respond with a success message
     res.status(200).send('Notification Received', responseData);
   } catch (error) {
@@ -720,9 +736,7 @@ app.post('/notify_url', (req, res) => {
     console.error("Error processing notification:", error);
     res.status(500).send('Internal Server Error');
   }
-})
-
-
+});
 
 
 app.listen(port, () => {
