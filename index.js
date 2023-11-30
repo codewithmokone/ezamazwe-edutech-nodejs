@@ -709,7 +709,9 @@ app.post('/notify_url', (req, res) => {
     // const subscriptionEndDate = moment([2010, 0, 31]).add(3, 'months');
     const subscriptionEndDate = moment(responseData.billing_date).add(3, 'months');
 
-    console.log("Subscription end date: ", subscriptionEndDate);
+    const endDateFormatted = subscriptionEndDate.format('YYYY-MM-DD');
+
+    console.log("Subscription end date: ", endDateFormatted);
 
     // Respond with a success message
     res.status(200).send('Notification Received', responseData);
