@@ -670,9 +670,9 @@ app.post('/notify_url', (req,res) => {
   // const data2 = req.query;
 
   console.log("Payment Notification data: ", responseData)
-  console.log("Payment Notification body: ", req.body)
-  console.log("Payment Notification query: ", req.query)
-  console.log("Payment Notification query: ", req.params)
+  // console.log("Payment Notification body: ", req.body)
+  // console.log("Payment Notification query: ", req.query)
+  // console.log("Payment Notification query: ", req.params)
 
 
   // Perform necessary operations with the received data
@@ -680,7 +680,7 @@ app.post('/notify_url', (req,res) => {
   
   // Send a response indicating that the notification was received
   res.status(200).send('Notification Received');
-  res.send('Notification Received');
+  // res.send('Notification Received');
 
 })
 
