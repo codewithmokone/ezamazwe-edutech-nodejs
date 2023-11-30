@@ -667,18 +667,11 @@ app.post('/payment', function (req, res) {
 app.post('/notify_url', (req,res) => {
 
   const responseData = req.body;
-  // const data2 = req.query;
 
-  console.log("Payment Notification data: ", responseData)
-  // console.log("Payment Notification body: ", req.body)
-  // console.log("Payment Notification query: ", req.query)
-  // console.log("Payment Notification query: ", req.params)
+  console.log("Payment Status: ", responseData.payment_status);
 
+  console.log("Payment Notification data: ", responseData);
 
-  // Perform necessary operations with the received data
-  // For example, verify the payment, update the database, etc.
-  
-  // Send a response indicating that the notification was received
   res.status(200).send('Notification Received');
   // res.send('Notification Received');
 
