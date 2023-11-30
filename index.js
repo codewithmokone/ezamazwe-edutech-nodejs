@@ -645,10 +645,10 @@ app.post('/payment', function (req, res) {
             <input type="hidden" name="merchant_key" value="m55oaux6bncnm" />
             <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
             <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/" />
-            <input type="hidden" name="notify_url" value="https://edutech-app-eecfd.web.app/" />
+            <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
             <input type="hidden" name="amount" value="100.00" />
             <input type="hidden" name="pf_payment_id" value="1089250" />
-            <input type="hidden" name="payment_status" value="COMPLETE" />
+            <input type="hidden" name="payment_status" value="" />
             <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
       </form>
   </body>
@@ -664,7 +664,7 @@ app.post('/payment', function (req, res) {
 
 
 // Payfast notification
-app.get('/notify_url', (req,res) => {
+app.post('/notify_url', (req,res) => {
 
   // const data = req.body;
   // const data2 = req.query;
