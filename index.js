@@ -17,6 +17,9 @@ const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 
 const admin = require('firebase-admin');    //import the firebase-admin package
+
+const { doc, updateDoc } = require('firebase-admin');
+
 const { getAuth } = require('firebase-admin/auth');
 
 const { check, validationResult } = require('express-validator');
@@ -717,7 +720,7 @@ app.post('/notify_url', async (req, res) => {
 
     console.log("User : ", user.uid);
 
-    if (responseData.payment_status === "COMPLETE"){
+    if (responseData.payment_status === "COMPLETE") {
 
       const userRef = doc(db, "users", user.uid);
 
@@ -725,9 +728,7 @@ app.post('/notify_url', async (req, res) => {
         "subscription": "subscribed",
         "subscriptionStartDate": responseData.billing_date,
         "subscriptionEndDate": endDateFormatted
-    });
-
-
+      });
     }
 
     // Respond with a success message
