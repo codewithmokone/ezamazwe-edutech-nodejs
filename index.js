@@ -27,6 +27,8 @@ const axios = require('axios');
 
 const port = process.env.PORT || 4000;
 
+const moment = require('moment');
+
 const serviceAccount = require('./serviceAccountKey.json'); // Key downloaded from Firebase Console
 
 const router = express.Router();
@@ -634,29 +636,60 @@ app.post('/payment', function (req, res) {
   //     </html>
   // `;
 
+  //   const htmlResponse = `
+  //   <html>
+  //   <body>
+  //       <form action="${payFastUrl}" method="post">
+  //           ${Object.entries(formData).map(([key, value]) => `
+  //               <input name="${key}" type="hidden" value="${value.trim()}" />
+  //           `).join('')}
+  //             <input type="hidden" name="merchant_id" value="10031961" />
+  //             <input type="hidden" name="merchant_key" value="m55oaux6bncnm" />
+  //             <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
+  //             <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/" />
+  //             <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
+  //             <input type="hidden" name="amount" value="100.00" />
+  //             <input type="hidden" name="pf_payment_id" value="1089250" />
+  //             <input type="hidden" name="payment_status" value="" />
+  //             <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
+  //       </form>
+  //   </body>
+  //   <script>
+  //       // Automatically submit the form when the page loads
+  //       document.forms[0].submit();
+  //   </script>
+  //   </html>
+  // `;
+
   const htmlResponse = `
-  <html>
-  <body>
-      <form action="${payFastUrl}" method="post">
-          ${Object.entries(formData).map(([key, value]) => `
-              <input name="${key}" type="hidden" value="${value.trim()}" />
-          `).join('')}
-            <input type="hidden" name="merchant_id" value="10031961" />
-            <input type="hidden" name="merchant_key" value="m55oaux6bncnm" />
-            <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
-            <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/" />
-            <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
-            <input type="hidden" name="amount" value="100.00" />
-            <input type="hidden" name="pf_payment_id" value="1089250" />
-            <input type="hidden" name="payment_status" value="" />
-            <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
-      </form>
-  </body>
-  <script>
-      // Automatically submit the form when the page loads
-      document.forms[0].submit();
-  </script>
-  </html>
+<html>
+<body>
+    <form action="${payFastUrl}" method="post">
+        ${Object.entries(formData).map(([key, value]) => `
+            <input name="${key}" type="hidden" value="${value.trim()}" />
+        `).join('')}
+          <input type="hidden" name="merchant_id" value="10031961" />
+          <input type="hidden" name="merchant_key" value="m55oaux6bncnm" />
+          <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/" />
+          <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/" />
+          <input type="hidden" name="notify_url" value="https://ezamazwe-edutech-nodejs.onrender.com/notify_url" />
+          <input type="hidden" name="amount" value="100.00" />
+          <input type="hidden" name="subscription_type" value="1">
+
+          <input type="hidden" name="recurring_amount" value="100.00">
+          <input type="hidden" name="frequency" value="4">
+          <input type="hidden" name="cycles" value="4">
+          <input type="hidden" name="subscription_notify_email" value="true">
+          <input type="hidden" name="subscription_notify_webhook" value="true">
+          <input type="hidden" name="subscription_notify_buyer" value="true">
+          <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
+    </form>
+</body>
+<script>
+    // Automatically submit the form when the page loads
+    document.forms[0].submit();
+</script>
+</html>
 `;
 
   res.send(htmlResponse);
@@ -664,16 +697,19 @@ app.post('/payment', function (req, res) {
 
 
 // Payfast notification
-app.post('/notify_url', (req,res) => {
+app.post('/notify_url', (req, res) => {
 
   try {
-    // Validate and sanitize input if necessary
-
     const responseData = req.body;
 
     // Log payment status and notification data
     console.log("Payment Status:", responseData.payment_status);
-    console.log("Payment Notification Data:", responseData);
+    console.log("Payment Notification Data: ", responseData);
+
+    // const subscriptionEndDate = moment([2010, 0, 31]).add(3, 'months');
+    const subscriptionEndDate = moment(responseData.billing_date).add(3, 'months');
+
+    console.log("Subscription end date: ", subscriptionEndDate);
 
     // Respond with a success message
     res.status(200).send('Notification Received', responseData);
@@ -682,16 +718,6 @@ app.post('/notify_url', (req,res) => {
     console.error("Error processing notification:", error);
     res.status(500).send('Internal Server Error');
   }
-
-  // const responseData = req.body;
-
-  // console.log("Payment Status: ", responseData.payment_status);
-
-  // console.log("Payment Notification data: ", responseData);
-
-  // res.status(200).send('Notification Received');
-  // res.send('Notification Received');
-
 })
 
 
