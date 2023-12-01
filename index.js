@@ -651,6 +651,7 @@ app.post('/payment', function (req, res) {
 
   const signature = generateAPISignature(passPhrase)
 
+  // const payFastUrl = 'https://wwww.payfast.co.za/eng/process';
   const payFastUrl = 'https://sandbox.payfast.co.za/eng/process';
 
   const htmlResponse = `
