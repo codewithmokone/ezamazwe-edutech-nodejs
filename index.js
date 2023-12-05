@@ -113,7 +113,7 @@ app.post('/create-user', [
 //     if (!uid) {
 //       return res.status(400).send('No user is provided.');
 //     }
-  
+
 //     // Check if the provided phone number already exists for another user
 //     const userRecord = await admin.auth().getUserByEmail(email);
 //     // const userExists = await getUserByPhoneNumber(phoneNumber);
@@ -121,7 +121,7 @@ app.post('/create-user', [
 //     //   return res.status(400).send('Phone number already exists for another user.');
 //     // }
 
-  
+
 //     getAuth()
 //       .updateUser(uid, {
 //         displayName: fullName,
@@ -146,36 +146,46 @@ app.post('/create-user', [
 // Handles updating user profile
 app.put('/admin-update', async (req, res) => {
 
-  const { uid, phoneNumber,email, fullName } = req.body;
+  const { uid, phoneNumber, email, fullName } = req.body;
+  try {
+    if (!uid) {
+      return res.status(400).json({ error: 'No user is provided.' });
+    }
 
-  if (!uid) {
-    return res.status(400).json({error:'No user is provided.'});
-  }
+    // // Check if the provided phone number already exists for another user
+    // const userRecord = await admin.auth().getUserByEmail(email);
+    const userRecord = await admin.auth().getUser(uid)
 
-  // // Check if the provided phone number already exists for another user
-  const userRecord = await admin.auth().getUserByEmail(email);
-  // const userExists = await getUserByPhoneNumber(phoneNumber);
-  if (userRecord && userRecord.phoneNumber === phoneNumber) {
-    return res.status(400).josn({error:'Phone number already exists for another user.'});
-  }
+    if (!userRecord) {
+      return res.status(400).json({ error: 'User not found.' });
+    }
+    // const userExists = await getUserByPhoneNumber(phoneNumber);
+    if (userRecord && userRecord.phoneNumber === phoneNumber) {
+      return res.status(400).json({ error: 'Phone number already exists for another user.' });
+    }
 
-  let response = null;
-  getAuth()
-    .updateUser(uid, {
-      displayName: fullName,
-      email: email,
-      phoneNumber: phoneNumber,
-    })
-    .then((userRecord) => {
-      // See the UserRecord reference doc for the contents of userRecord.
-      console.log('Successfully updated user', userRecord.toJSON());
-      response = {message:"Successfully updated user", userRecord: userRecord.toJSON()}
-    })
-    .catch((error) => {
-      console.log('Error updating user:', error);
-      response = {error:"Error updating user:",}
-    });
+    let response = null;
+    await getAuth()
+      .updateUser(uid, {
+        displayName: fullName,
+        email: email,
+        phoneNumber: phoneNumber,
+      })
+      .then((userRecord) => {
+        // See the UserRecord reference doc for the contents of userRecord.
+        console.log('Successfully updated user', userRecord.toJSON());
+        response = { message: "Successfully updated user" }
+      })
+      .catch((error) => {
+        console.log('Error updating user:', error);
+        response = { error: "Error updating user:", }
+      });
     return res.status(200).json(response);
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+
+
 });
 
 /**
