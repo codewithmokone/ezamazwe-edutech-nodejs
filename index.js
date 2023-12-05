@@ -106,7 +106,7 @@ app.post('/create-user', [
 // Handles updating user profile
 app.put('/admin-update', async (req, res) => {
 
-  const { uid, phoneNumber } = req.body;
+  const { uid, phoneNumber,email, fullName } = req.body;
 
   if (!uid) {
     return res.status(400).send('No user is provided.');
@@ -120,6 +120,8 @@ app.put('/admin-update', async (req, res) => {
 
   getAuth()
     .updateUser(uid, {
+      name: fullName,
+      email: email,
       phoneNumber: phoneNumber,
     })
     .then((userRecord) => {
