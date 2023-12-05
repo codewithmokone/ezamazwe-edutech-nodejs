@@ -113,10 +113,11 @@ app.put('/admin-update', async (req, res) => {
   }
 
   // Check if the provided phone number already exists for another user
-  const userExists = await getUserByPhoneNumber(phoneNumber);
-  if (userExists && userExists.uid !== uid) {
-    return res.status(400).send('Phone number already exists for another user.');
-  }
+  const userRecord = await admin.auth().getUserByEmail(email);
+  // const userExists = await getUserByPhoneNumber(phoneNumber);
+  // if (userRecord && userRecord.uid !== uid) {
+  //   return res.status(400).send('Phone number already exists for another user.');
+  // }
 
   getAuth()
     .updateUser(uid, {
