@@ -152,17 +152,15 @@ app.put('/admin-update', async (req, res) => {
       return res.status(400).json({ error: 'No user is provided.' });
     }
 
-    // // Check if the provided phone number already exists for another user
-    // const userRecord = await admin.auth().getUserByEmail(email);
     const userRecord = await admin.auth().getUser(uid)
 
     if (!userRecord) {
       return res.status(400).json({ error: 'User not found.' });
     }
     // const userExists = await getUserByPhoneNumber(phoneNumber);
-    if (userRecord && userRecord.phoneNumber === phoneNumber) {
-      return res.status(400).json({ error: 'Phone number already exists for another user.' });
-    }
+    // if (userRecord && userRecord.phoneNumber === phoneNumber) {
+    //   return res.status(400).json({ error: 'Phone number already exists for another user.' });
+    // }
 
     let response = null;
     await getAuth()
