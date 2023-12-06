@@ -422,13 +422,13 @@ app.post('/verify-email', async (req, res) => {
     // Update the user's custom claims to mark email as verified
     await getAuth().updateUser(userRecord.uid, { emailVerified: true });
 
-    const verificationSnapshot = await db.collection('verifyEmail')
-      .where('verificationCode', '==', code)
-      .get();
+    // const verificationSnapshot = await db.collection('verifyEmail')
+    //   .where('verificationCode', '==', code)
+    //   .get();
 
     // Assuming there's only one document with this code, delete it
-    verificationSnapshot.forEach(async (doc) => {
-      await db.collection('verifyEmail').doc(doc.id).delete();})
+    // verificationSnapshot.forEach(async (doc) => {
+    //   await db.collection('verifyEmail').doc(doc.id).delete();})
 
       const user = await admin.auth().getUserByEmail(email);
 
