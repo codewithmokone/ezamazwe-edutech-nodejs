@@ -96,11 +96,11 @@ app.post('/create-user', [
 
     res.status(200).json({ message: "Admin created successfully", userRecord: user });
   } catch (error) {
-    if(error.message === 'TOO_LONG'){
+    if (error.message === 'TOO_LONG') {
       res.status(400).json('Phone number too long.');
-    }else if(error.message === "The phone number must be a non-empty E.164 standard compliant identifier string."){
+    } else if (error.message === "The phone number must be a non-empty E.164 standard compliant identifier string.") {
       res.status(400).json('Please provide a phone number.');
-    }else if(error.message  === "The email address is improperly formatted."){
+    } else if (error.message === "The email address is improperly formatted.") {
       res.status(400).json('Please provide a valid email.');
     }
     res.status(400).json({ error: error.message });
@@ -422,16 +422,24 @@ app.post('/verify-email', async (req, res) => {
     // Update the user's custom claims to mark email as verified
     await getAuth().updateUser(userRecord.uid, { emailVerified: true });
 
-    const user = await admin.auth().getUserByEmail(email);
+    const verificationSnapshot = await db.collection('verifyEmail')
+      .where('verificationCode', '==', code)
+      .get();
 
-    // return res.redirect("https://ezamazwe-edutech-client.netlify.app/")
-    return res.status(200).json({ message: 'Email verification successful.' });
+    // Assuming there's only one document with this code, delete it
+    verificationSnapshot.forEach(async (doc) => {
+      await db.collection('verifyEmail').doc(doc.id).delete();})
 
-  } catch (error) {
-    console.error('Error verifying email:', error);
-    return res.status(500).json({ error: 'Failed to verify email.' });
-  }
-});
+      const user = await admin.auth().getUserByEmail(email);
+
+      // return res.redirect("https://ezamazwe-edutech-client.netlify.app/")
+      return res.status(200).json({ message: 'Email verification successful.' });
+
+    } catch (error) {
+      console.error('Error verifying email:', error);
+      return res.status(500).json({ error: 'Failed to verify email.' });
+    }
+  });
 
 
 /**
