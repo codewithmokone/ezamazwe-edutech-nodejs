@@ -22,11 +22,9 @@ const { doc, updateDoc } = require('firebase-admin');
 
 const { getAuth } = require('firebase-admin/auth');
 
-const { check, validationResult } = require('express-validator');
+const { check, body, validationResult } = require('express-validator');
 
 const app = express();
-
-const axios = require('axios');
 
 const port = process.env.PORT || 4000;
 
@@ -64,9 +62,9 @@ app.get('/', (req, res) => {
  * Returns - Admin created successfully or error message
  */
 app.post('/create-user', [
-  check('email').isEmail().withMessage('Invalid email address'),
-  check('name').notEmpty().withMessage('Provide a name'),
-  check('phoneNumber').notEmpty().withMessage('Invalid phone number'),
+  body('email').isEmail().withMessage('Invalid email address.'),
+  body('name').notEmpty().withMessage('Please provide a name.'),
+  body('phoneNumber').notEmpty().withMessage('Invalid phone number.'),
 ], async (req, res) => {
 
   const { email, name, phoneNumber } = req.body;
@@ -98,6 +96,13 @@ app.post('/create-user', [
 
     res.status(200).json({ message: "Admin created successfully", userRecord: user });
   } catch (error) {
+    if(error.message === 'TOO_LONG'){
+      res.status(400).json('Phone number too long.');
+    }else if(error.message === "The phone number must be a non-empty E.164 standard compliant identifier string."){
+      res.status(400).json('Please provide a phone number.');
+    }else if(error.message  === "The email address is improperly formatted."){
+      res.status(400).json('Please provide a valid email.');
+    }
     res.status(400).json({ error: error.message });
   }
 });
