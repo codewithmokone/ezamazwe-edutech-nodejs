@@ -1,24 +1,16 @@
-// Firebase admin SDK Authentication
-
 const express = require('express');     //express - Creates an Express application. The express() function is a top-level function exported by the express module.
 
 require("dotenv").config()
 
 const cors = require('cors');
 
-// const payfast = require('payfast');
-
 const bodyParser = require('body-parser');
-
-const url = require('url');
 
 const crypto = require('crypto');
 
 const nodemailer = require('nodemailer');
 
 const admin = require('firebase-admin');    //import the firebase-admin package
-
-const { doc, updateDoc } = require('firebase-admin');
 
 const { getAuth } = require('firebase-admin/auth');
 
@@ -31,8 +23,6 @@ const port = process.env.PORT || 4000;
 const moment = require('moment');
 
 const serviceAccount = require('./serviceAccountKey.json'); // Key downloaded from Firebase Console
-
-const router = express.Router();
 
 admin.initializeApp({     // Initialize Firebase Admin SDK
   credential: admin.credential.cert(serviceAccount),
@@ -108,46 +98,6 @@ app.post('/create-user', [
 });
 
 
-// // Handles updating user profile
-// app.put('/admin-update', async (req, res) => {
-
-//   try {
-
-//     const { uid, phoneNumber, email, fullName } = req.body;
-
-//     if (!uid) {
-//       return res.status(400).send('No user is provided.');
-//     }
-
-//     // Check if the provided phone number already exists for another user
-//     const userRecord = await admin.auth().getUserByEmail(email);
-//     // const userExists = await getUserByPhoneNumber(phoneNumber);
-//     // if (userRecord && userRecord.uid !== uid) {
-//     //   return res.status(400).send('Phone number already exists for another user.');
-//     // }
-
-
-//     getAuth()
-//       .updateUser(uid, {
-//         displayName: fullName,
-//         email: email,
-//         phoneNumber: phoneNumber,
-//       })
-//       .then((userRecord) => {
-//         // See the UserRecord reference doc for the contents of userRecord.
-//         console.log('Successfully updated user', userRecord.toJSON());
-//       })
-//       .catch((error) => {
-//         console.log('Error updating user:', error);
-//       });
-
-//     res.status(200).json({ message: "User info updated." });
-//   } catch (error) {
-//     res.status(400).json({ error: error.message });
-//   }
-// });
-
-
 // Handles updating user profile
 app.put('/admin-update', async (req, res) => {
 
@@ -162,10 +112,7 @@ app.put('/admin-update', async (req, res) => {
     if (!userRecord) {
       return res.status(400).json({ error: 'User not found.' });
     }
-    // const userExists = await getUserByPhoneNumber(phoneNumber);
-    // if (userRecord && userRecord.phoneNumber === phoneNumber) {
-    //   return res.status(400).json({ error: 'Phone number already exists for another user.' });
-    // }
+ 
 
     let response = null;
     await getAuth()
@@ -673,43 +620,7 @@ const generateAPISignature = (data, passPhrase = null) => {
 }
 
 
-// app.post('/payment', function (req, res) {
-
-//   const formData = req.body;
-
-//   const passPhrase = process.env.PASSPHRASE;
-
-//   const signature = generateAPISignature(passPhrase)
-
-//   const payFastUrl = 'https://payfast.co.za/eng/process';
-
-//   const htmlResponse = `
-//       <html>
-//       <body>
-//           <form action="${payFastUrl}" method="post">
-//               ${Object.entries(formData).map(([key, value]) => `
-//                   <input name="${key}" type="hidden" value="${value.trim()}" />
-//               `).join('')}
-//                 <input type="hidden" name="merchant_id" value="${process.env.MERCHANT_ID}" />
-//                 <input type="hidden" name="merchant_key" value="${process.env.MERCHANT_KEY}" />
-//                 <input type="hidden" name="return_url" value="https://edutech-app-eecfd.web.app/user" />
-//                 <input type="hidden" name="cancel_url" value="https://edutech-app-eecfd.web.app/user" />
-//                 <input type="hidden" name="notify_url" value="https://www.example.com/notify" />
-//                 <input type="hidden" name="amount" value="100.00" />
-//                 <input type="hidden" name="item_name" value="Ezamazwe Edutech Premium Courses" />
-//           </form>
-//       </body>
-//       <script>
-//           // Automatically submit the form when the page loads
-//           document.forms[0].submit();
-//       </script>
-//       </html>
-//   `;
-
-//   res.send(htmlResponse);
-// });
-
-
+// Handles the payfast payment gateway.
 app.post('/payment', function (req, res) {
 
   const formData = req.body;
