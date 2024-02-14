@@ -22,9 +22,9 @@ This Node.js application serves as an admin dashboard, providing various functio
 'express-validator': Express.js middleware for request validation
 'moment': Library for date manipulation and formatting
 
-Endpoints and Functionalities
+## Endpoints and Functionalities
 
-1. Admin User Management
+### 1. Admin User Management
 
 'POST /create-user': Create an admin user with email, name, and phone number.
 'PUT /admin-update': Update admin user profile with UID, email, phone number, and full name.
@@ -36,28 +36,28 @@ Endpoints and Functionalities
 'POST /send-contactus-email': Send an email to the info desk for contact.
 'GET /check-email-verification': Check if the email has been verified.
 
-2. User Management
+### 2. User Management
 
 'GET /view-users': View all users.
 'DELETE /delete-user': Delete a user by UID.
 
-3. Payment Integration
+### 3. Payment Integration
 
-'POST /payment': Initiate payment process using PayFast.
-'POST /payfast/callback': Handle PayFast callback for payment confirmation.
-'POST /notify_url': Handle PayFast notification for payment status.
+* `POST /payment`: Initiate payment process using PayFast.
+* `POST /payfast/callback`: Handle PayFast callback for payment confirmation.
+* `POST /notify_url`: Handle PayFast notification for payment status.
 
-Miscellaneous
+## Miscellaneous
 
 'generateRandomPassword()': Function to generate a random password.
 'generateVerificationLink()': Function to generate a unique verification link.
 'generateAPISignature()': Function to generate API signature for PayFast.
 
-Server Setup
+## Server Setup
 
 The server runs on the specified port, either from the environment variable or the default port 4000.
 
-Notes
+## Notes
 
 Ensure all environment variables are properly configured before running the application.
 Proper error handling is implemented throughout the application.
