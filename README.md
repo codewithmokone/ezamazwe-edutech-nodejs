@@ -12,15 +12,15 @@ This Node.js application serves as an admin dashboard, providing various functio
 
 ## Dependencies Used
 
-'express': Web framework for Node.js
-'dotenv': Load environment variables from a .env file
-'cors': Cross-Origin Resource Sharing middleware
-'body-parser': Middleware for parsing request bodies
-'crypto': Node.js cryptographic module
-'nodemailer': Module for sending emails
-'firebase-admin': Firebase Admin SDK for server-side integration
-'express-validator': Express.js middleware for request validation
-'moment': Library for date manipulation and formatting
+* `express`: Web framework for Node.js
+* `dotenv`: Load environment variables from a .env file
+* `cors`: Cross-Origin Resource Sharing middleware
+* `body-parser`: Middleware for parsing request bodies
+* `*crypto`: Node.js cryptographic module
+* `nodemailer`: Module for sending emails
+* `firebase-admin`: Firebase Admin SDK for server-side integration
+* `express-validator`: Express.js middleware for request validation
+* `moment`: Library for date manipulation and formatting
 
 ## Endpoints and Functionalities
 
