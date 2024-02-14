@@ -26,20 +26,20 @@ This Node.js application serves as an admin dashboard, providing various functio
 
 ### 1. Admin User Management
 
-'POST /create-user': Create an admin user with email, name, and phone number.
-'PUT /admin-update': Update admin user profile with UID, email, phone number, and full name.
-'PUT /update-password-reset': Update admin password and send a notification via email.
-'POST /admin-login': Authenticate admin user with email and password.
-'POST /reset-password': Send a password reset link to the user's email.
-'POST /email-verification': Send an email for account verification.
-'POST /verify-email': Verify email and update user's email verification status.
-'POST /send-contactus-email': Send an email to the info desk for contact.
-'GET /check-email-verification': Check if the email has been verified.
+* `POST /create-user`: Create an admin user with email, name, and phone number.
+* `PUT /admin-update`: Update admin user profile with UID, email, phone number, and full name.
+* `PUT /update-password-reset`: Update admin password and send a notification via email.
+* `POST /admin-login`: Authenticate admin user with email and password.
+* `POST /reset-password`: Send a password reset link to the user's email.
+* `POST /email-verification`: Send an email for account verification.
+* `POST /verify-email`: Verify email and update user's email verification status.
+* `POST /send-contactus-email`: Send an email to the info desk for contact.
+* `GET /check-email-verification`: Check if the email has been verified.
 
 ### 2. User Management
 
-'GET /view-users': View all users.
-'DELETE /delete-user': Delete a user by UID.
+* `GET /view-users`: View all users.
+* `DELETE /delete-user`: Delete a user by UID.
 
 ### 3. Payment Integration
 
@@ -49,9 +49,9 @@ This Node.js application serves as an admin dashboard, providing various functio
 
 ## Miscellaneous
 
-'generateRandomPassword()': Function to generate a random password.
-'generateVerificationLink()': Function to generate a unique verification link.
-'generateAPISignature()': Function to generate API signature for PayFast.
+* `generateRandomPassword()`: Function to generate a random password.
+* `generateVerificationLink()`: Function to generate a unique verification link.
+* `generateAPISignature()`: Function to generate API signature for PayFast.
 
 ## Server Setup
 
