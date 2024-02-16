@@ -44,11 +44,20 @@ app.get("/", (req, res) => {
 
 /**
  * Creating admin user endpoint.
- * @param {string} email - admin email address.
- * @param {string} name - admin name.
- * @param {string} phoneNumber - admin phone number.
+ * This endpoint accepts JSON formatted data.
+ * Example of JSON input:
+ * {
+ *    "email": "admin@example.com",
+ *    "name": "John Doe",
+ *    "phoneNumber": "+27123456789"
+ * }
  *
- * Returns - Admin created successfully or error message
+ * @bodyparam {string} email - The email address of the admin. (e.g., "admin@example.com")
+ * @bodyparam {string} name - The name of the admin. (e.g., "John Doe")
+ * @bodyparam {string} phoneNumber - The phone number of the admin. (e.g., "+27123456789")
+ *
+ * @Returns {string} A message indicating whether the admin was created successfully or an error message.
+ *
  */
 app.post(
   "/create-user",
@@ -116,12 +125,21 @@ app.post(
 
 /**
  * Handles updating user profile
- * @param {alphanumeric} uid - admin email address.
- * @param {string} fullName - admin name.
- * @param {string} email - admin phone number.
- * @param {number} phoneNumber - admin phone number.
+ * This endpoint accepts JSON formatted data.
+ * Example of JSON input:
+ * {
+ *    "uid": "xX9P3wtMFdSOxRkOlgsUFdaCrVB3",
+ *    "email": "admin@example.com",
+ *    "name": "John Doe",
+ *    "phoneNumber": "+27123456789"
+ * }
+ * 
+ * @bodyparam {alphanumeric} uid - The uid of admin.
+ * @bodyparam {string} fullName - The name of the admin. (e.g., "John Doe")
+ * @bodyparam {string} email - The email address of the admin. (e.g., "admin@example.com")
+ * @bodyparam {number} phoneNumber - The phone number of the admin. (e.g., "+271234567890")
  *
- * Returns - Admin updated successfully or error message
+ * @Returns {string} A message indicating whether the admin was updated successfully or an error message.
  */
 app.put(
   "/admin-update",
@@ -175,10 +193,16 @@ app.put(
 );
 
 /**
- * Admin password update endpoint and sends a notification via email
- * @param {string} email - admin email address.
+ * Endpoint for admin password update and sends a notification via email
+ * This endpoint accepts JSON formatted data.
+ * Example of JSON input:
+ * {
+ *    "email": "admin@example.com",
+ * }
+ * 
+ * @bodyparam {string} email - The email address of the admin. (e.g., "admin@example.com")
  *
- * Returns - Password updated successfully
+ * @Returns {string} A message indicating whether the admin password was updated successfully or an error message.
  */
 app.put("/update-password-reset", async (req, res) => {
   try {
@@ -219,9 +243,11 @@ app.put("/update-password-reset", async (req, res) => {
 });
 
 /**
- * Handles admin login endpoint.
- * @param {string} email - admin email address.
- * @param {alphanumeric} pasword - admin password.
+ * Endpoint for admin login.
+ * @bodyparam {string} email - The email address of the admin. (e.g., "admin@example.com")
+ * @bodyparam {alphanumeric} password - The password of the admin. (e.g., "9aBcDeFgHiJkL")
+ *
+ * @Returns {string} A message indicating whether the admin has logged in successfully or an error message.
  */
 app.post(
   "/admin-login",
@@ -275,7 +301,15 @@ app.post(
 
 /**
  * Resets forgoting password
- * @param {string} email - user's email.
+ * This endpoint accepts JSON formatted data.
+ * Example of JSON input:
+ * {
+ *    "email": "admin@example.com",
+ * }
+ * 
+ * @bodyparam {string} email - The email address of the admin. (e.g., "admin@example.com")
+ *
+ * @Returns {string} A message indicating whether password reset email has been successfully or an error message.
  */
 app.post(
   "/reset-password",
@@ -330,6 +364,12 @@ app.post(
   }
 );
 
+/**
+ * Function for generating a verification link
+ * @bodyparam {string} email - The email address of the admin. (e.g., "admin@example.com")
+ *
+ * @Returns {string} A verication link that include a hash and a user email address.
+ */
 async function generateVerificationLink(email) {
   try {
     // Your logic here to generate a unique verification link using cryptography
@@ -353,7 +393,15 @@ async function generateVerificationLink(email) {
 
 /**
  * Endpoint for email verification
- * @param {string} email - user email address.
+ * This endpoint accepts JSON formatted data.
+ * Example of JSON input:
+ * {
+ *    "email": "admin@example.com",
+ * }
+ * 
+ * @bodyparam {string} email - The email address of the admin. (e.g., "admin@example.com")
+ *
+ * @Returns {string} A message indicating whether verification email was sent successfully or an error message.
  */
 app.post(
   "/email-verification",
@@ -387,9 +435,11 @@ app.post(
 );
 
 /**
- * Checks if the code and email match, and verifies account.
- * @param {string} email - user email address.
- * @param {hex} code - user generated code.
+ * Endoint checks if the code and email match, and verifies account.
+ * @bodyparam {string} email - The email address of the user. (e.g., "admin@example.com")
+ * @bodyparam {hex} code - user generated code.
+ *
+ * @Returns {string} A message indicating email verification was successfully or an error message.
  */
 app.post("/verify-email", async (req, res) => {
   try {
@@ -447,13 +497,23 @@ app.post("/verify-email", async (req, res) => {
 
 /**
  * Endpoint for sending contact us email
- * @param {string} email - user email address.
- * @param {string} subject - subject from the form.
- * @param {string} message - message from the form.
- * @param {string} firstName - first name from the form.
- * @param {string} lastName - last name from the form.
+ * This endpoint accepts JSON formatted data.
+ * Example of JSON input:
+ * {
+ *    "email": "admin@example.com",
+ *    "subject": "Subject",
+ *    "message": "Message",
+ *    "firstName": "John ",
+ *    "lastName": "Doe",
+ * }
+ * @bodyparam {string} email - user email address.
+ * @bodyparam {string} subject - subject from the form.
+ * @bodyparam {string} message - message from the form.
+ * @bodyparam {string} firstName - first name from the form.
+ * @bodyparam {string} lastName - last name from the form.
  *
- * Returns -  Email sent successful or error message
+ * @Returns {string} A message indicating contact us email sent successfully or an error message.
+ *
  */
 app.post(
   "/send-contactus-email",
@@ -499,7 +559,7 @@ app.post(
 
 /**
  * Endpoint for checking email verification status
- * @param {string} email - user/admin email address.
+ * @bodyparam {string} email - user/admin email address.
  *
  * Returns - Email is verified on success or email is not verified
  */
@@ -595,7 +655,13 @@ async function sendRandomPasswordEmail(email, password, url) {
   }
 }
 
-// Endpoint for changing the role of a admin
+
+/**
+ * Endpoint for changing the role of a admin
+ * @bodyparam {string} email - user/admin email address.
+ *
+ * @Returns {string} Admin role has been changed or email is not verified
+ */
 app.post("/change-admin-role", (req, res) => {
   // Extract the email of the new admin from the request body
   const email = req.body.email;
@@ -643,6 +709,11 @@ app.get("/view-users", async (req, res) => {
 
 /**
  * Endpoint for deleting a user
+ * This endpoint accepts JSON formatted data.
+ * Example of JSON input:
+ * {
+ *    "uid": "xX9P3wtMFdSOxRkOlgsUFdaCrVB3",
+ * }
  * @param {alphanumeric} uid - user Identity.
  *
  * Returns -  Email sent successful or error message
